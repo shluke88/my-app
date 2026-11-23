@@ -1,26 +1,93 @@
 @import "tailwindcss";
 
+/* Design Ref: §5 — 스마트폰 세로 화면 공통 틀. 1~3m 떨어져서도 읽히도록 크고 대비가 강한 색을 쓴다. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #14121f; /* 바탕: 어두운 남보라 (카메라 영상과 잘 어울림) */
+  --surface: #221f33; /* 카드·패널 */
+  --surface-2: #2f2b45; /* 눌린 카드, 막대 바탕 */
+  --foreground: #f5f3ff; /* 기본 글자 */
+  --muted: #a9a3c7; /* 보조 글자 */
+  --primary: #ffcc33; /* 주요 버튼 (노랑) */
+  --primary-ink: #1d1a10; /* 주요 버튼 글자 */
+  --accent: #5ee6b0; /* 좋음·인식 좋음 (초록) */
+  --warn: #ffb24a; /* 얕음·안내 (주황) */
+  --danger: #ff6b6b; /* 오류·삭제 (빨강) */
+  /* 아이템 등급 테두리 색: 노말 회색, 레어 파랑, 에픽 보라, 레전드 주황 */
+  --rarity-normal: #9aa0aa;
+  --rarity-rare: #4da3ff;
+  --rarity-epic: #b46bff;
+  --rarity-legend: #ff9d2e;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
+  --color-accent: var(--accent);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-rarity-normal: var(--rarity-normal);
+  --color-rarity-rare: var(--rarity-rare);
+  --color-rarity-epic: var(--rarity-epic);
+  --color-rarity-legend: var(--rarity-legend);
+  --font-sans: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+/* 도트 그림이 흐려지지 않게 픽셀을 선명하게 유지한다 */
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* 숨 쉬기 같은 작은 움직임 */
+@keyframes breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2%);
+  }
+}
+.animate-breathe {
+  animation: breathe 2.4s ease-in-out infinite;
+}
+
+/* 레벨 업·등급 표시가 튀어 오르는 연출 */
+@keyframes pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.animate-pop {
+  animation: pop 0.35s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-breathe,
+  .animate-pop {
+    animation: none;
+  }
 }

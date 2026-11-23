@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // 외부에서 받은 자세 인식 실행 파일과 삭제 대기 폴더는 검사하지 않는다
+    "public/mediapipe/**",
+    "trash-can/**",
   ]),
 ]);
 
