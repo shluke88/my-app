@@ -38,12 +38,15 @@ describe("브라우저 저장 모듈", () => {
     const s = fakeStore();
     const c = createDefaultCharacter();
     c.parts.lower = { level: 7, xp: 30 };
-    c.unlockedItemIds = ["hat-red-cap"];
-    c.equipped = { hat: "hat-red-cap" };
+    c.unlockedItemIds = ["weight-normal", "old-removed-item"];
+    c.equipped = { weight: "weight-normal", vest: "vest-epic" };
     saveCharacter(c, s);
     const loaded = loadCharacter(s);
     expect(loaded.parts.lower).toEqual({ level: 7, xp: 30 });
-    expect(loaded.equipped.hat).toBe("hat-red-cap");
+    expect(loaded.equipped.weight).toBe("weight-normal");
+    // 이전 버전 아이템과 해금하지 않은 아이템은 버린다
+    expect(loaded.unlockedItemIds).toEqual(["weight-normal"]);
+    expect(loaded.equipped.vest).toBeUndefined();
   });
 
   it("없거나 깨진 데이터는 기본값", () => {

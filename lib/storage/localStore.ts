@@ -2,6 +2,7 @@
 // 서버로 보내지 않고 이 기기에만 저장한다. 비공개 모드 등으로 저장소를 못 쓰면 조용히 넘어간다.
 import type { BodyPart, CharacterState, SessionRecord, Settings } from "@/types";
 import { BODY_PARTS, MAX_SESSIONS } from "@/lib/growth/config";
+import { ITEM_BY_ID } from "@/lib/growth/items";
 
 export const STORAGE_VERSION = 1;
 const KEY_CHARACTER = "posefit:character";
@@ -88,9 +89,13 @@ export function createDefaultSettings(): Settings {
 export function loadCharacter(store = defaultStore()): CharacterState {
   const saved = readJson<CharacterState>(KEY_CHARACTER, store);
   if (!saved || saved.version !== STORAGE_VERSION || !saved.parts) return createDefaultCharacter();
-  // 빠진 부위가 있으면 기본값으로 채운다
+  // 빠진 부위가 있으면 기본값으로 채우고, 지금 목록에 없는 아이템(이전 버전)은 버린다
   const base = createDefaultCharacter();
-  return { ...base, ...saved, parts: { ...base.parts, ...saved.parts }, equipped: { ...saved.equipped } };
+  const unlocked = (saved.unlockedItemIds ?? []).filter((id) => ITEM_BY_ID[id]);
+  const equipped = Object.fromEntries(
+    Object.entries(saved.equipped ?? {}).filter(([slot, id]) => id && ITEM_BY_ID[id]?.slot === slot && unlocked.includes(id)),
+  );
+  return { ...base, ...saved, parts: { ...base.parts, ...saved.parts }, unlockedItemIds: unlocked, equipped };
 }
 
 export function saveCharacter(state: CharacterState, store = defaultStore()): boolean {

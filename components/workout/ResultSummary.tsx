@@ -5,7 +5,7 @@ import BigButton from "@/components/common/BigButton";
 import PixelCharacter from "@/components/character/PixelCharacter";
 import { useCharacter } from "@/hooks/useStored";
 import { BODY_PARTS, MAX_LEVEL, PART_LABEL, RARITY_LABEL } from "@/lib/growth/config";
-import { ITEM_BY_ID } from "@/lib/growth/items";
+import { ITEM_BY_ID, itemImage } from "@/lib/growth/items";
 import { EXERCISE_RULES } from "@/lib/exercise/rules";
 import type { BodyPart, SessionRecord } from "@/types";
 
@@ -72,8 +72,16 @@ export default function ResultSummary({
           {session.newItemIds.map((id) => {
             const it = ITEM_BY_ID[id];
             return (
-              <div key={id} className={`animate-pop rounded-2xl border-4 bg-surface p-3 text-center text-lg font-bold ${RARITY_BORDER[it.rarity]}`}>
-                🎁 새 아이템: [{RARITY_LABEL[it.rarity]}] {it.name}
+              <div
+                key={id}
+                className={`animate-pop flex items-center gap-3 rounded-2xl border-4 bg-surface p-3 text-lg font-bold ${RARITY_BORDER[it.rarity]}`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={itemImage(id)} alt="" className="pixelated h-14 w-14 object-contain" />
+                <span>
+                  🎁 새 아이템
+                  <br />[{RARITY_LABEL[it.rarity]}] {it.name}
+                </span>
               </div>
             );
           })}

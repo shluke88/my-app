@@ -5,7 +5,8 @@ export type ExerciseId = "squat" | "lunge" | "pushup" | "plank" | "jumpingJack";
 /** 성장 부위: 하체, 상체, 코어, 체력 */
 export type BodyPart = "lower" | "upper" | "core" | "stamina";
 
-export type ItemSlot = "hat" | "top" | "bottom" | "shoes" | "background";
+/** 아이템 종류: 아령(캐릭터 옆), 매트(발밑에 깔림), 밴드(손목에 참), 조끼(몸에 입음) */
+export type ItemSlot = "weight" | "mat" | "band" | "vest";
 export type Rarity = "normal" | "rare" | "epic" | "legend";
 
 /** 코드 안의 고정 아이템 데이터 (20개) */

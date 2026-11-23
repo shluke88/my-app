@@ -6,21 +6,13 @@ import PageHeader from "@/components/common/PageHeader";
 import BottomTabs from "@/components/common/BottomTabs";
 import PixelCharacter from "@/components/character/PixelCharacter";
 import { useCharacter, useSettings } from "@/hooks/useStored";
-import { BODY_PARTS, MAX_LEVEL, PART_LABEL, RARITY_LABEL } from "@/lib/growth/config";
+import { BODY_PARTS, MAX_LEVEL, PART_LABEL } from "@/lib/growth/config";
 import { xpToNext } from "@/lib/growth/level";
-import { ITEMS, SLOT_LABEL } from "@/lib/growth/items";
-
-const RARITY_TEXT = {
-  normal: "text-rarity-normal",
-  rare: "text-rarity-rare",
-  epic: "text-rarity-epic",
-  legend: "text-rarity-legend",
-} as const;
+import Wardrobe from "@/components/character/Wardrobe";
 
 export default function ProfileScreen() {
   const { character, ready } = useCharacter();
   const { settings } = useSettings();
-  const owned = new Set(character.unlockedItemIds);
 
   return (
     <>
@@ -65,25 +57,7 @@ export default function ProfileScreen() {
           })}
         </section>
 
-        <section className="rounded-3xl border border-line bg-surface p-4">
-          <h2 className="mb-2 text-lg font-bold">
-            모은 아이템 {owned.size} / {ITEMS.length}
-          </h2>
-          {owned.size === 0 ? (
-            <p className="text-muted">아무 부위나 4레벨이 되면 첫 아이템을 받아요.</p>
-          ) : (
-            <ul className="space-y-1">
-              {ITEMS.filter((i) => owned.has(i.id)).map((i) => (
-                <li key={i.id} className="flex justify-between">
-                  <span>
-                    {SLOT_LABEL[i.slot]} · {i.name}
-                  </span>
-                  <span className={`font-bold ${RARITY_TEXT[i.rarity]}`}>{RARITY_LABEL[i.rarity]}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        <Wardrobe character={character} />
       </main>
       <BottomTabs />
     </>

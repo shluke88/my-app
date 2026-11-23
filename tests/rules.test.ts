@@ -5,11 +5,11 @@ import { RARITY_WEIGHTS } from "@/lib/growth/config";
 
 // 작업 2: 규칙 데이터가 PRD 숫자와 맞는지 확인
 describe("규칙 데이터", () => {
-  it("아이템은 20개이고 등급별 개수가 8/6/4/2", () => {
-    expect(ITEMS).toHaveLength(20);
+  it("아이템은 16개(4종류 × 4등급)이고 등급별 4개씩", () => {
+    expect(ITEMS).toHaveLength(16);
     const count = (r: string) => ITEMS.filter((i) => i.rarity === r).length;
-    expect([count("normal"), count("rare"), count("epic"), count("legend")]).toEqual([8, 6, 4, 2]);
-    expect(new Set(ITEMS.map((i) => i.id)).size).toBe(20);
+    expect([count("normal"), count("rare"), count("epic"), count("legend")]).toEqual([4, 4, 4, 4]);
+    expect(new Set(ITEMS.map((i) => i.id)).size).toBe(16);
   });
 
   it("등급 확률 합은 100", () => {
