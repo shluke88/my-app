@@ -65,8 +65,9 @@ describe("브라우저 저장 모듈", () => {
   it("설정 저장과 전체 삭제", () => {
     const s = fakeStore();
     expect(loadSettings(s).voiceOn).toBe(true);
-    saveSettings({ version: 1, voiceOn: false, acknowledged: true }, s);
+    saveSettings({ version: 1, voiceOn: false, acknowledged: true, onboarded: true, heightCm: 172, weightKg: 68 }, s);
     expect(loadSettings(s).voiceOn).toBe(false);
+    expect(loadSettings(s).heightCm).toBe(172);
     addSession(session("a"), s);
     clearAll(s);
     expect(loadSessions(s)).toEqual([]);

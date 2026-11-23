@@ -62,8 +62,14 @@ export interface SessionRecord {
 export interface Settings {
   version: number;
   voiceOn: boolean;
-  /** 처음 한 번 보여 주는 안전·개인정보 확인을 마쳤는지 */
+  /** 처음 한 번 보여 주는 안전·개인정보 확인(동의)을 마쳤는지 */
   acknowledged: boolean;
+  /** 동의 → 카메라 테스트 → 신체정보 첫 사용 단계를 모두 마쳤는지 */
+  onboarded: boolean;
+  /** 키(cm), 선택 입력. 판정·성장에는 쓰지 않는다 */
+  heightCm?: number;
+  /** 몸무게(kg), 선택 입력 */
+  weightKg?: number;
 }
 
 /** 안내 문구 규칙 */

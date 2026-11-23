@@ -5,7 +5,7 @@ import Link from "next/link";
 import BigButton from "@/components/common/BigButton";
 import PageHeader from "@/components/common/PageHeader";
 import SafetyNotice from "@/components/common/SafetyNotice";
-import FirstUseNotice from "@/components/common/FirstUseNotice";
+import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import PixelCharacter from "@/components/character/PixelCharacter";
 import { useCharacter, useSettings } from "@/hooks/useStored";
 import { EXERCISE_RULES, ROUTINE, SINGLE_ORDER } from "@/lib/exercise/rules";
@@ -14,6 +14,11 @@ import { BODY_PARTS, PART_LABEL } from "@/lib/growth/config";
 export default function HomeScreen() {
   const { character } = useCharacter();
   const { settings, ready } = useSettings();
+
+  // 저장소를 읽기 전에는 아무것도 그리지 않아 첫 화면이 깜빡이지 않게 한다
+  if (!ready) return <main className="min-h-dvh" />;
+  // 처음 한 번: 동의 → 카메라 테스트 → 신체정보 → 루틴 시작
+  if (!settings.onboarded) return <OnboardingFlow />;
 
   return (
     <>
@@ -26,7 +31,7 @@ export default function HomeScreen() {
         }
       />
       <main className="flex flex-1 flex-col gap-4 px-4 pb-8">
-        <Link href="/character" className="block rounded-3xl bg-surface p-3" aria-label="내 캐릭터 보기">
+        <Link href="/character" className="block rounded-3xl border border-line bg-surface p-3 shadow-sm" aria-label="내 캐릭터 보기">
           <PixelCharacter character={character} size={176} className="mx-auto" />
           <div className="mt-2 grid grid-cols-4 gap-1 text-center text-sm">
             {BODY_PARTS.map((p) => (
@@ -60,7 +65,6 @@ export default function HomeScreen() {
           <SafetyNotice />
         </div>
       </main>
-      {ready && !settings.acknowledged && <FirstUseNotice />}
     </>
   );
 }

@@ -5,7 +5,45 @@ import { useState } from "react";
 import BigButton from "@/components/common/BigButton";
 import PageHeader from "@/components/common/PageHeader";
 import { useSettings } from "@/hooks/useStored";
-import { clearAll, isStorageAvailable, saveSettings } from "@/lib/storage/localStore";
+import { clearAll, isStorageAvailable, loadSettings, saveSettings } from "@/lib/storage/localStore";
+import { NumberField } from "@/components/onboarding/OnboardingFlow";
+
+/** 키·몸무게 고치기·지우기 (선택 입력, 이 기기에만 저장) */
+function BodyInfoEditor() {
+  const saved = loadSettings();
+  const [height, setHeight] = useState(saved.heightCm ? String(saved.heightCm) : "");
+  const [weight, setWeight] = useState(saved.weightKg ? String(saved.weightKg) : "");
+  const h = Number(height);
+  const w = Number(weight);
+  const heightOk = height === "" || (h >= 100 && h <= 230);
+  const weightOk = weight === "" || (w >= 25 && w <= 250);
+  const changed = height !== (saved.heightCm ? String(saved.heightCm) : "") || weight !== (saved.weightKg ? String(saved.weightKg) : "");
+
+  const save = (clear: boolean) =>
+    saveSettings({
+      ...loadSettings(),
+      heightCm: clear || height === "" ? undefined : Math.round(h),
+      weightKg: clear || weight === "" ? undefined : Math.round(w * 10) / 10,
+    });
+
+  return (
+    <section className="space-y-3 rounded-2xl border border-line bg-surface p-5">
+      <h2 className="text-xl font-bold">신체정보 (선택)</h2>
+      <div className="grid grid-cols-2 gap-3">
+        <NumberField label="키" unit="cm" value={height} onChange={setHeight} ok={heightOk} hint="100~230 사이" />
+        <NumberField label="몸무게" unit="kg" value={weight} onChange={setWeight} ok={weightOk} hint="25~250 사이" />
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <BigButton small variant="ghost" onClick={() => save(true)} disabled={!saved.heightCm && !saved.weightKg}>
+          지우기
+        </BigButton>
+        <BigButton small onClick={() => save(false)} disabled={!changed || !heightOk || !weightOk}>
+          저장
+        </BigButton>
+      </div>
+    </section>
+  );
+}
 
 export default function SettingsScreen() {
   const { settings, ready } = useSettings();
@@ -16,7 +54,7 @@ export default function SettingsScreen() {
   const deleteAll = () => {
     // 확인 화면을 다시 띄우지 않도록 "확인했어요"는 유지하고 나머지를 지운다
     clearAll();
-    saveSettings({ ...settings, voiceOn: true, acknowledged: true });
+    saveSettings({ version: settings.version, voiceOn: true, acknowledged: true, onboarded: true });
     setConfirming(false);
     setDeleted(true);
   };
@@ -30,7 +68,7 @@ export default function SettingsScreen() {
           role="switch"
           aria-checked={settings.voiceOn}
           onClick={toggleVoice}
-          className="flex min-h-16 items-center justify-between rounded-2xl bg-surface px-5 text-xl font-bold"
+          className="flex min-h-16 items-center justify-between rounded-2xl border border-line bg-surface px-5 text-xl font-bold"
         >
           <span>음성 안내</span>
           <span
@@ -43,7 +81,13 @@ export default function SettingsScreen() {
           {settings.voiceOn ? "켜짐 — 브라우저 기본 음성으로 짧게 안내해요." : "꺼짐 — 화면 메시지로만 안내해요."}
         </p>
 
-        <div className="rounded-2xl bg-surface p-5 text-base leading-relaxed text-muted">
+        {ready && <BodyInfoEditor key={`${settings.heightCm}-${settings.weightKg}`} />}
+
+        <BigButton href="/camera-test" variant="secondary">
+          📷 카메라 테스트 다시 하기
+        </BigButton>
+
+        <div className="rounded-2xl border border-line bg-surface p-5 text-base leading-relaxed text-muted">
           내 기록은 이 기기의 브라우저에만 저장돼요. 브라우저 데이터를 지우거나 기기를 바꾸면 사라질 수 있어요.
           {ready && !isStorageAvailable() && (
             <p className="mt-2 font-bold text-warn">지금은 저장소를 쓸 수 없어 기록이 저장되지 않아요. (비공개 모드 등)</p>

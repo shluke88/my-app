@@ -5,10 +5,11 @@ import type { ReactNode } from "react";
 type Variant = "primary" | "secondary" | "danger" | "ghost";
 
 const VARIANT_CLASS: Record<Variant, string> = {
-  primary: "bg-primary text-primary-ink active:brightness-90",
-  secondary: "bg-surface-2 text-foreground active:bg-surface",
+  primary:
+    "bg-gradient-to-r from-primary via-primary to-primary-2 text-primary-ink shadow-lg shadow-primary/25 active:brightness-110",
+  secondary: "bg-surface text-foreground border border-line shadow-sm active:bg-surface-2",
   danger: "bg-danger text-white active:brightness-90",
-  ghost: "bg-transparent text-foreground border border-surface-2 active:bg-surface",
+  ghost: "bg-transparent text-foreground border border-line active:bg-surface",
 };
 
 interface BigButtonProps {
@@ -33,7 +34,7 @@ export default function BigButton({
   className = "",
 }: BigButtonProps) {
   const cls = [
-    "flex w-full items-center justify-center gap-2 rounded-2xl font-bold transition select-none",
+    "flex w-full items-center justify-center gap-2 rounded-full font-bold transition select-none",
     small ? "min-h-12 px-4 text-base" : "min-h-16 px-5 text-xl",
     VARIANT_CLASS[variant],
     disabled ? "pointer-events-none opacity-40" : "",
@@ -42,7 +43,7 @@ export default function BigButton({
 
   if (href && !disabled) {
     return (
-      <Link href={href} className={cls}>
+      <Link href={href} className={cls} onClick={onClick}>
         {children}
       </Link>
     );

@@ -82,7 +82,7 @@ export function createDefaultCharacter(): CharacterState {
 }
 
 export function createDefaultSettings(): Settings {
-  return { version: STORAGE_VERSION, voiceOn: true, acknowledged: false };
+  return { version: STORAGE_VERSION, voiceOn: true, acknowledged: false, onboarded: false };
 }
 
 export function loadCharacter(store = defaultStore()): CharacterState {
