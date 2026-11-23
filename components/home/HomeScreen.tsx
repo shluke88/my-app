@@ -33,7 +33,7 @@ export default function HomeScreen() {
       />
       <main className="flex flex-1 flex-col gap-4 px-4 pb-8">
         <Link href="/profile" className="block rounded-3xl border border-line bg-surface p-3 shadow-sm" aria-label="내 캐릭터 보기">
-          <PixelCharacter character={character} size={176} className="mx-auto" />
+          <PixelCharacter character={character} size={220} className="mx-auto" />
           <div className="mt-2 grid grid-cols-4 gap-1 text-center text-sm">
             {BODY_PARTS.map((p) => (
               <div key={p} className="rounded-xl bg-surface-2 py-1">

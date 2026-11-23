@@ -43,7 +43,7 @@ export default function ResultSummary({
   return (
     <main className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pb-6 pt-6">
       <h1 className="text-center text-3xl font-extrabold">운동 완료! 🎉</h1>
-      <PixelCharacter character={character} size={140} className="mx-auto" />
+      <PixelCharacter character={character} size={170} className="mx-auto" />
       <section className="grid grid-cols-2 gap-2 text-center">
         <Stat label="시간" value={formatDuration(session.durationSec)} />
         <Stat label="반복(좋음)" value={`${good}회`} />

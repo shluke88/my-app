@@ -34,7 +34,7 @@ export default function ProfileScreen() {
       />
       <main className="flex flex-1 flex-col gap-4 px-4 pb-6">
         <div className="rounded-3xl border border-line bg-surface p-4 shadow-sm">
-          <PixelCharacter character={character} size={160} className="mx-auto" />
+          <PixelCharacter character={character} size={200} className="mx-auto" />
           {ready && (settings.gender || settings.heightCm || settings.weightKg) && (
             <p className="mt-2 text-center text-sm text-muted">
               {[settings.gender && (settings.gender === "male" ? "남성" : "여성"), settings.heightCm && `키 ${settings.heightCm}cm`, settings.weightKg && `몸무게 ${settings.weightKg}kg`]
