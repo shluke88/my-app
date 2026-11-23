@@ -59,7 +59,8 @@ export default function PixelCharacter({ character, size = 160, className = "" }
   const eq = character.equipped;
 
   return (
-    <div className={`flex justify-center ${className}`} style={{ height: size }} aria-label="도트 캐릭터">
+    // 발밑 매트가 아래 글자와 겹치지 않게 아래쪽에 여백을 둔다
+    <div className={`flex justify-center ${className}`} style={{ height: Math.round(size * 1.12) }} aria-label="도트 캐릭터">
       <div className="relative" style={{ width, height: size }}>
         {/* 매트: 발밑에 깔림 */}
         {eq.mat && (
