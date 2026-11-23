@@ -33,6 +33,25 @@ export function isStorageAvailable(store: KeyValueStore | null = defaultStore())
   }
 }
 
+/** 같은 탭 안의 화면들이 저장 변경을 알 수 있게 알린다 */
+export const STORE_EVENT = "posefit-store";
+function notifyChange() {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(STORE_EVENT));
+}
+
+/** 저장 값의 원본 글자를 읽는다 (화면에서 변경 감지용) */
+export function readRaw(key: string): string | null {
+  const store = defaultStore();
+  if (!store) return null;
+  try {
+    return store.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+export const STORE_KEYS = { character: KEY_CHARACTER, sessions: KEY_SESSIONS, settings: KEY_SETTINGS } as const;
+
 function readJson<T>(key: string, store: KeyValueStore | null): T | null {
   if (!store) return null;
   try {
@@ -47,6 +66,7 @@ function writeJson(key: string, value: unknown, store: KeyValueStore | null): bo
   if (!store) return false;
   try {
     store.setItem(key, JSON.stringify(value));
+    notifyChange();
     return true;
   } catch {
     return false;
@@ -107,4 +127,5 @@ export function clearAll(store = defaultStore()): void {
       // 지울 수 없으면 넘어간다
     }
   }
+  notifyChange();
 }
