@@ -9,6 +9,7 @@ import Logo from "@/components/common/Logo";
 import CameraCheck from "@/components/workout/CameraCheck";
 import { loadSettings, saveSettings } from "@/lib/storage/localStore";
 import { EXERCISE_RULES, ROUTINE } from "@/lib/exercise/rules";
+import type { Gender } from "@/types";
 
 type Step = "consent" | "camera" | "body" | "start";
 const STEPS: Step[] = ["consent", "camera", "body", "start"];
@@ -151,6 +152,7 @@ function BodyStep({ onNext }: { onNext: () => void }) {
   const saved = loadSettings();
   const [height, setHeight] = useState(saved.heightCm ? String(saved.heightCm) : "");
   const [weight, setWeight] = useState(saved.weightKg ? String(saved.weightKg) : "");
+  const [gender, setGender] = useState<Gender | undefined>(saved.gender);
   const h = Number(height);
   const w = Number(weight);
   const heightOk = height === "" || (h >= 100 && h <= 230);
@@ -160,6 +162,7 @@ function BodyStep({ onNext }: { onNext: () => void }) {
     const s = loadSettings();
     saveSettings({
       ...s,
+      gender: skip ? undefined : gender,
       heightCm: skip || height === "" ? undefined : Math.round(h),
       weightKg: skip || weight === "" ? undefined : Math.round(w * 10) / 10,
     });
@@ -172,6 +175,7 @@ function BodyStep({ onNext }: { onNext: () => void }) {
         <h2 className="text-2xl font-extrabold">신체정보 입력</h2>
         <p className="mt-1 text-muted">선택 사항이에요. 이 기기에만 저장되고, 설정에서 언제든 고치거나 지울 수 있어요.</p>
       </div>
+      <GenderField value={gender} onChange={setGender} />
       <NumberField label="키" unit="cm" value={height} onChange={setHeight} ok={heightOk} hint="100~230 사이" />
       <NumberField label="몸무게" unit="kg" value={weight} onChange={setWeight} ok={weightOk} hint="25~250 사이" />
       <div className="mt-auto space-y-2">
@@ -181,6 +185,39 @@ function BodyStep({ onNext }: { onNext: () => void }) {
         <BigButton variant="ghost" small onClick={() => save(true)}>
           건너뛰기
         </BigButton>
+      </div>
+    </div>
+  );
+}
+
+const GENDER_OPTIONS: { value: Gender; label: string }[] = [
+  { value: "male", label: "남성" },
+  { value: "female", label: "여성" },
+];
+
+/** 성별 고르기 (선택). 같은 버튼을 다시 누르면 선택을 지운다 */
+export function GenderField({ value, onChange }: { value?: Gender; onChange: (g: Gender | undefined) => void }) {
+  return (
+    <div role="radiogroup" aria-label="성별">
+      <span className="mb-1 block text-lg font-bold">성별</span>
+      <div className="grid grid-cols-2 gap-2">
+        {GENDER_OPTIONS.map((o) => {
+          const on = value === o.value;
+          return (
+            <button
+              key={o.value}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              onClick={() => onChange(on ? undefined : o.value)}
+              className={`min-h-14 rounded-2xl border text-xl font-bold transition ${
+                on ? "border-primary bg-primary text-primary-ink" : "border-line bg-surface text-foreground"
+              }`}
+            >
+              {o.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -204,7 +241,7 @@ export function NumberField(props: {
           inputMode="decimal"
           value={props.value}
           onChange={(e) => props.onChange(e.target.value.replace(/[^0-9.]/g, ""))}
-          className="min-h-14 flex-1 bg-transparent text-2xl font-bold outline-none"
+          className="min-h-14 w-full min-w-0 flex-1 bg-transparent text-2xl font-bold outline-none"
           placeholder="—"
         />
         <span className="text-lg text-muted">{props.unit}</span>

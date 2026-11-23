@@ -6,22 +6,25 @@ import BigButton from "@/components/common/BigButton";
 import PageHeader from "@/components/common/PageHeader";
 import { useSettings } from "@/hooks/useStored";
 import { clearAll, isStorageAvailable, loadSettings, saveSettings } from "@/lib/storage/localStore";
-import { NumberField } from "@/components/onboarding/OnboardingFlow";
+import { GenderField, NumberField } from "@/components/onboarding/OnboardingFlow";
+import type { Gender } from "@/types";
 
 /** 키·몸무게 고치기·지우기 (선택 입력, 이 기기에만 저장) */
 function BodyInfoEditor() {
   const saved = loadSettings();
   const [height, setHeight] = useState(saved.heightCm ? String(saved.heightCm) : "");
   const [weight, setWeight] = useState(saved.weightKg ? String(saved.weightKg) : "");
+  const [gender, setGender] = useState<Gender | undefined>(saved.gender);
   const h = Number(height);
   const w = Number(weight);
   const heightOk = height === "" || (h >= 100 && h <= 230);
   const weightOk = weight === "" || (w >= 25 && w <= 250);
-  const changed = height !== (saved.heightCm ? String(saved.heightCm) : "") || weight !== (saved.weightKg ? String(saved.weightKg) : "");
+  const changed = gender !== saved.gender || height !== (saved.heightCm ? String(saved.heightCm) : "") || weight !== (saved.weightKg ? String(saved.weightKg) : "");
 
   const save = (clear: boolean) =>
     saveSettings({
       ...loadSettings(),
+      gender: clear ? undefined : gender,
       heightCm: clear || height === "" ? undefined : Math.round(h),
       weightKg: clear || weight === "" ? undefined : Math.round(w * 10) / 10,
     });
@@ -29,12 +32,13 @@ function BodyInfoEditor() {
   return (
     <section className="space-y-3 rounded-2xl border border-line bg-surface p-5">
       <h2 className="text-xl font-bold">신체정보 (선택)</h2>
+      <GenderField value={gender} onChange={setGender} />
       <div className="grid grid-cols-2 gap-3">
         <NumberField label="키" unit="cm" value={height} onChange={setHeight} ok={heightOk} hint="100~230 사이" />
         <NumberField label="몸무게" unit="kg" value={weight} onChange={setWeight} ok={weightOk} hint="25~250 사이" />
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <BigButton small variant="ghost" onClick={() => save(true)} disabled={!saved.heightCm && !saved.weightKg}>
+        <BigButton small variant="ghost" onClick={() => save(true)} disabled={!saved.heightCm && !saved.weightKg && !saved.gender}>
           지우기
         </BigButton>
         <BigButton small onClick={() => save(false)} disabled={!changed || !heightOk || !weightOk}>
@@ -81,7 +85,7 @@ export default function SettingsScreen() {
           {settings.voiceOn ? "켜짐 — 브라우저 기본 음성으로 짧게 안내해요." : "꺼짐 — 화면 메시지로만 안내해요."}
         </p>
 
-        {ready && <BodyInfoEditor key={`${settings.heightCm}-${settings.weightKg}`} />}
+        {ready && <BodyInfoEditor key={`${settings.gender}-${settings.heightCm}-${settings.weightKg}`} />}
 
         <BigButton href="/camera-test" variant="secondary">
           📷 카메라 테스트 다시 하기

@@ -58,6 +58,8 @@ export interface SessionRecord {
   newItemIds: string[];
 }
 
+export type Gender = "male" | "female";
+
 /** 설정 — 저장 이름: posefit:settings */
 export interface Settings {
   version: number;
@@ -70,6 +72,8 @@ export interface Settings {
   heightCm?: number;
   /** 몸무게(kg), 선택 입력 */
   weightKg?: number;
+  /** 성별, 선택 입력. 캐릭터 모습에만 쓰고 판정·성장에는 쓰지 않는다 */
+  gender?: Gender;
 }
 
 /** 안내 문구 규칙 */
