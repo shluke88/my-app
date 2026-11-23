@@ -56,6 +56,23 @@ export default function WorkoutScreen() {
 
   const checking = s.phase === "ready" || s.phase === "countdown";
 
+  // 개발 모드 전용: 주소 끝에 &demo=1을 붙이면 카메라 없이 운동 중 화면을 미리 본다
+  const demoOn = process.env.NODE_ENV === "development" && params.get("demo") === "1";
+  const demoRef = useRef(s.demo);
+  useEffect(() => {
+    demoRef.current = s.demo;
+  });
+  useEffect(() => {
+    if (!demoOn) return;
+    const run = () => demoRef.current();
+    const first = window.setTimeout(run, 300);
+    const loop = window.setInterval(run, 3000);
+    return () => {
+      window.clearTimeout(first);
+      window.clearInterval(loop);
+    };
+  }, [demoOn]);
+
   const mirrored = !isFile;
   const r = s.rule;
   const isHold = r.measure === "hold";
@@ -145,7 +162,7 @@ export default function WorkoutScreen() {
 
         {/* 레벨 업 */}
         {s.levelUp && (
-          <div key={s.levelUp.key} className="animate-pop absolute bottom-4 left-3 z-10 flex items-center gap-2 rounded-2xl bg-white px-3.5 py-2.5 font-bold text-foreground shadow-lg">
+          <div key={s.levelUp.key} className={`animate-pop absolute left-3 z-20 flex items-center gap-2 rounded-2xl bg-white px-3.5 py-2.5 font-bold text-foreground shadow-lg ${s.phase === "active" ? "bottom-[10.5rem]" : "bottom-4"}`}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" />
               <path d="m9 12 2 2 4-4" />
@@ -199,32 +216,41 @@ export default function WorkoutScreen() {
             </BigButton>
           </div>
         )}
-      </div>
-
-      {/* 아래 흰 카드 */}
-      {(s.phase === "active" || s.phase === "countdown") && (
-        <section className="z-10 -mt-4 rounded-t-3xl bg-surface px-5 pb-3 pt-4 text-center text-foreground">
-          <p className="text-5xl font-extrabold tabular-nums">
-            {isHold ? `유지 ${Math.floor(s.counts.holdSec)}초` : target ? `${s.counts.good} / ${target}회` : `${s.counts.good}회`}
-            {isHold && target ? <span className="text-2xl text-muted"> / {target}초</span> : null}
-          </p>
-          {!isHold && <p className="mt-1 text-lg text-muted">얕은 횟수: {s.counts.shallow}</p>}
-          <div className="mt-2 flex items-center justify-center gap-2">
-            {mode === "routine" ? (
-              order.map((id, i) => (
-                <span key={id} className={`h-2 w-2 rounded-full ${i === s.idx ? "bg-foreground" : i < s.idx ? "bg-muted" : "bg-surface-2"}`} />
-              ))
-            ) : (
-              <span className="text-sm text-muted">중단을 누르면 결과를 보여 줘요</span>
+        {/* 아래 흰 카드 (그림처럼 카메라 위에 떠 있는 둥근 카드): 반복 수/목표, 얕은 횟수, 몇 번째 운동인지 점 */}
+        {(s.phase === "active" || s.phase === "countdown") && (
+          <section className="absolute inset-x-3 bottom-3 z-10 rounded-3xl bg-surface px-5 pb-3 pt-4 text-center text-foreground shadow-xl">
+            <p className="text-5xl font-extrabold tabular-nums">
+              {isHold
+                ? target
+                  ? `${Math.floor(s.counts.holdSec)} / ${target}초`
+                  : `유지 ${Math.floor(s.counts.holdSec)}초`
+                : target
+                  ? `${s.counts.good} / ${target}회`
+                  : `${s.counts.good}회`}
+            </p>
+            <p className="mt-1 text-lg text-muted">
+              {isHold ? "기준 자세로 버틴 시간" : `얕은 횟수: ${s.counts.shallow}`}
+            </p>
+            <div className="mt-2 flex items-center justify-center gap-2">
+              {mode === "routine" ? (
+                order.map((id, i) => (
+                  <span
+                    key={id}
+                    className={`h-2 w-2 rounded-full ${i === s.idx ? "bg-foreground" : i < s.idx ? "bg-muted" : "bg-surface-2"}`}
+                  />
+                ))
+              ) : (
+                <span className="text-sm text-muted">중단을 누르면 결과를 보여 줘요</span>
+              )}
+            </div>
+            {mode === "routine" && (
+              <button type="button" onClick={s.nextExercise} className="mt-1 text-sm text-muted underline underline-offset-2">
+                다음 운동 ›
+              </button>
             )}
-          </div>
-          {mode === "routine" && (
-            <button type="button" onClick={s.nextExercise} className="mt-1 text-sm text-muted underline underline-offset-2">
-              다음 운동 ›
-            </button>
-          )}
-        </section>
-      )}
+          </section>
+        )}
+      </div>
       <BottomTabs />
     </div>
   );

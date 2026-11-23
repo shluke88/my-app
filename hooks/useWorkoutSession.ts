@@ -301,7 +301,14 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
         if (out.focus) setGrade({ grade: g, x: out.focus.x, y: out.focus.y, key: nextKey() });
         const range = cueRef.current.endRep(out.rangeCueIds, f.t);
         if (range) showCue(range.cue.text, range.speak);
-        else if (g === "good" && voiceOnRef.current && c.good % 5 === 0) say(`${c.good}회`);
+        else if (g === "good") {
+          // 남은 횟수 음성: 루틴은 "N회 남았어요"(5회마다, 마지막 3회는 매번), 자유 모드는 5회마다 누적 횟수
+          if (mode === "routine") {
+            const done = r.id === "lunge" ? c.sideGood : c.good;
+            const left = r.routineTarget - done;
+            if (left > 0 && (left <= 3 || done % 5 === 0)) say(`${left}회 남았어요`);
+          } else if (c.good % 5 === 0) say(`${c.good}회`);
+        }
         setCounts({ good: c.good, shallow: c.shallow, holdSec: c.holdSec });
         checkTarget();
       }
@@ -313,6 +320,11 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
           gainXp(r.bodyPart, r.xpPerUnit * out.newHoldUnits);
           if (out.focus) setGrade({ grade: "good", x: out.focus.x, y: out.focus.y, key: nextKey() });
           cueRef.current.nextUnit();
+          // 플랭크 남은 시간 음성 (5초마다)
+          if (mode === "routine") {
+            const left = r.routineTarget - Math.floor(c.holdSec);
+            if (left > 0) say(`${left}초 남았어요`);
+          } else say(`${Math.floor(c.holdSec)}초`);
         }
         setCounts((old) =>
           Math.floor(old.holdSec) === Math.floor(c.holdSec) && old.good === c.good
@@ -322,7 +334,7 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
         checkTarget();
       }
     },
-    [checkTarget, gainXp, order, say, setPhase, showCue],
+    [checkTarget, gainXp, mode, order, say, setPhase, showCue],
   );
 
   // 3·2·1 카운트다운
@@ -409,7 +421,20 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
     stop: finishSession,
     skipRest: () => prepareExercise(idxRef.current + 1),
     nextExercise: finishExercise,
+    demo,
   };
+
+  /** 개발 모드 전용 미리보기: 카메라 없이 운동 중 화면(횟수·안내 띠·좋음 말풍선·레벨 업)을 보여 준다 */
+  function demo() {
+    phaseRef.current = "active";
+    setPhaseState("active");
+    setPaused(false);
+    setCounts({ good: 7, shallow: 0, holdSec: 12 });
+    const text = EXERCISE_RULES[order[idxRef.current]].cues[0]?.text ?? "";
+    setBanner({ text, key: nextKey() });
+    setGrade({ grade: "good", x: 0.52, y: 0.55, key: nextKey() });
+    setLevelUp({ text: `레벨 업! (${PART_LABEL[EXERCISE_RULES[order[idxRef.current]].bodyPart]} LV.3)`, key: nextKey() });
+  }
 }
 
 export function orderFor(mode: "routine" | "single", exercise: ExerciseId): ExerciseId[] {
