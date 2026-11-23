@@ -5,16 +5,19 @@ export type ExerciseId = "squat" | "lunge" | "pushup" | "plank" | "jumpingJack";
 /** 성장 부위: 하체, 상체, 코어, 체력 */
 export type BodyPart = "lower" | "upper" | "core" | "stamina";
 
-/** 아이템 종류: 아령(캐릭터 옆), 매트(발밑에 깔림), 밴드(손목에 참), 조끼(몸에 입음) */
-export type ItemSlot = "weight" | "mat" | "band" | "vest";
+/** 아이템 종류: 덤벨, 케틀벨, 밴드(줄넘기 포함), 매트(폼롤러 포함). 입지 않고 캐릭터 주변 바닥에 놓아 둔다 */
+export type ItemSlot = "dumbbell" | "kettlebell" | "band" | "mat";
 export type Rarity = "normal" | "rare" | "epic" | "legend";
 
-/** 코드 안의 고정 아이템 데이터 (20개) */
+/** 코드 안의 고정 아이템 데이터 (16개 = 4종류 × 4등급) */
 export interface ItemDef {
   id: string;
   name: string;
   slot: ItemSlot;
   rarity: Rarity;
+  /** 그림 파일 크기(px). 화면에서 비율을 맞추는 데 쓴다 */
+  w: number;
+  h: number;
 }
 
 export interface PartProgress {

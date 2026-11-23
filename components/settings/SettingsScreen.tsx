@@ -7,7 +7,6 @@ import PageHeader from "@/components/common/PageHeader";
 import { useSettings } from "@/hooks/useStored";
 import { clearAll, isStorageAvailable, loadSettings, saveSettings } from "@/lib/storage/localStore";
 import { GenderField, NumberField } from "@/components/onboarding/OnboardingFlow";
-import DevTools from "./DevTools";
 import type { Gender } from "@/types";
 
 /** 키·몸무게 고치기·지우기 (선택 입력, 이 기기에만 저장) */
@@ -117,7 +116,6 @@ export default function SettingsScreen() {
           </div>
         )}
         {deleted && <p className="text-center text-accent">모든 기록을 지웠어요.</p>}
-        <DevTools />
       </main>
     </>
   );

@@ -6,9 +6,9 @@ import PageHeader from "@/components/common/PageHeader";
 import BottomTabs from "@/components/common/BottomTabs";
 import PixelCharacter from "@/components/character/PixelCharacter";
 import { useCharacter, useSettings } from "@/hooks/useStored";
+import ItemShelf from "@/components/character/ItemShelf";
 import { BODY_PARTS, MAX_LEVEL, PART_LABEL } from "@/lib/growth/config";
 import { xpToNext } from "@/lib/growth/level";
-import Wardrobe from "@/components/character/Wardrobe";
 
 export default function ProfileScreen() {
   const { character, ready } = useCharacter();
@@ -57,7 +57,7 @@ export default function ProfileScreen() {
           })}
         </section>
 
-        <Wardrobe character={character} />
+        <ItemShelf character={character} />
       </main>
       <BottomTabs />
     </>

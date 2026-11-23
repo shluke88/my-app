@@ -71,6 +71,20 @@ body {
   animation: breathe 2.4s ease-in-out infinite;
 }
 
+/* 캐릭터 주변 아이템이 살짝 둥실거리는 움직임 */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4%);
+  }
+}
+.animate-float {
+  animation: float 3.2s ease-in-out infinite;
+}
+
 /* 레벨 업·등급 표시가 튀어 오르는 연출 */
 @keyframes pop {
   0% {
@@ -92,6 +106,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-breathe,
+  .animate-float,
   .animate-pop {
     animation: none;
   }

@@ -89,13 +89,16 @@ export function createDefaultSettings(): Settings {
 export function loadCharacter(store = defaultStore()): CharacterState {
   const saved = readJson<CharacterState>(KEY_CHARACTER, store);
   if (!saved || saved.version !== STORAGE_VERSION || !saved.parts) return createDefaultCharacter();
-  // 빠진 부위가 있으면 기본값으로 채우고, 지금 목록에 없는 아이템(이전 버전)은 버린다
+  // 빠진 부위가 있으면 기본값으로 채운다
   const base = createDefaultCharacter();
-  const unlocked = (saved.unlockedItemIds ?? []).filter((id) => ITEM_BY_ID[id]);
-  const equipped = Object.fromEntries(
-    Object.entries(saved.equipped ?? {}).filter(([slot, id]) => id && ITEM_BY_ID[id]?.slot === slot && unlocked.includes(id)),
-  );
-  return { ...base, ...saved, parts: { ...base.parts, ...saved.parts }, unlockedItemIds: unlocked, equipped };
+  // 아이템 목록이 바뀌어도 깨지지 않게, 지금 목록에 있는 아이템만 남긴다
+  const unlockedItemIds = (saved.unlockedItemIds ?? []).filter((id) => ITEM_BY_ID[id]);
+  const equipped: CharacterState["equipped"] = {};
+  for (const [slot, id] of Object.entries(saved.equipped ?? {})) {
+    const item = id ? ITEM_BY_ID[id] : undefined;
+    if (item && item.slot === slot && unlockedItemIds.includes(id)) equipped[item.slot] = id;
+  }
+  return { ...base, ...saved, parts: { ...base.parts, ...saved.parts }, unlockedItemIds, equipped };
 }
 
 export function saveCharacter(state: CharacterState, store = defaultStore()): boolean {
