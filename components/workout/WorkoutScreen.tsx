@@ -2,9 +2,9 @@
 
 // ② 운동 화면 — 사용자가 준 그림처럼: 어두운 위 막대(뒤로·운동 이름·세트·중단), 화면을 꽉 채운 카메라와 뼈대,
 // 위쪽 파란 안내 띠, 관절 옆 "좋음!" 말풍선, 왼쪽 아래 "레벨 업!", 아래 흰 카드(반복 수/목표·얕은 횟수·진행 점), 하단 탭.
-// 단계: 준비(소리 켜고 시작 → 인식 좋음 2초 → 3·2·1) → 운동 → (루틴) 쉬기 → 결과
+// 단계: 카메라 점검(자동으로 카메라 켜기 → 인식되면 테두리 초록 → "인식되었습니다" → 3·2·1) → 운동 → (루틴) 쉬기 → 결과
 import Link from "next/link";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import BigButton from "@/components/common/BigButton";
 import BottomTabs from "@/components/common/BottomTabs";
@@ -46,6 +46,15 @@ export default function WorkoutScreen() {
     [sessionFrame, paused, side],
   );
   const model = usePoseLoop({ videoRef: videoRef, active: camStatus === "ready", onFrame });
+  const { arm } = s;
+
+  // 운동 화면에 들어오면 바로 카메라를 켜고 점검을 시작한다 (시작 버튼을 누른 직후라 카메라·소리 허용이 가능)
+  useEffect(() => {
+    void camStart();
+    arm();
+  }, [camStart, arm]);
+
+  const checking = s.phase === "ready" || s.phase === "countdown";
 
   const mirrored = !isFile;
   const r = s.rule;
@@ -123,7 +132,16 @@ export default function WorkoutScreen() {
           </div>
         )}
 
-        {camStatus === "ready" && paused && s.phase !== "rest" && <PauseOverlay />}
+        {camStatus === "ready" && paused && s.phase === "active" && <PauseOverlay />}
+
+        {/* 카메라 점검 테두리: 인식되면 초록, 아니면 흰색 */}
+        {checking && camStatus === "ready" && (
+          <div
+            className={`pointer-events-none absolute inset-0 z-[5] border-[6px] transition-colors duration-300 ${
+              paused ? "border-white/50" : "border-[#4ade80]"
+            }`}
+          />
+        )}
 
         {/* 레벨 업 */}
         {s.levelUp && (
@@ -138,7 +156,8 @@ export default function WorkoutScreen() {
 
         {/* 3·2·1 */}
         {s.phase === "countdown" && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30">
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black/30">
+            <p className="animate-pop rounded-full bg-[#3aa66b] px-5 py-2 text-2xl font-extrabold text-white shadow-lg">✓ 인식되었습니다</p>
             <span key={s.countdown} className="animate-pop text-[10rem] font-extrabold text-white drop-shadow-lg">
               {s.countdown > 0 ? s.countdown : "시작!"}
             </span>
@@ -151,11 +170,9 @@ export default function WorkoutScreen() {
             camStatus={camStatus}
             camError={camError ? CAMERA_ERROR_TEXT[camError] : null}
             modelStatus={model.status}
-            armed={s.armed}
             paused={paused}
             progress={s.readyProgress}
             onCamera={camStart}
-            onArm={s.arm}
             onRetryModel={model.retry}
             onFile={startFile}
             exercise={s.exercise}
@@ -236,26 +253,29 @@ function GradeBubble({ grade }: { grade: "good" | "shallow" }) {
   );
 }
 
+/** 카메라 점검 패널: 카메라는 자동으로 켜지고, 전신이 인식되면 2초 뒤 자동으로 시작한다 */
 function ReadyPanel(props: {
   camStatus: string;
   camError: { title: string; help: string } | null;
   modelStatus: string;
-  armed: boolean;
   paused: boolean;
   progress: number;
   onCamera: () => void;
-  onArm: () => void;
   onRetryModel: () => void;
   onFile: (f: File) => void;
   exercise: ExerciseId;
 }) {
   const r = EXERCISE_RULES[props.exercise];
   const camOn = props.camStatus === "ready";
+  const modelReady = props.modelStatus === "ready";
   return (
     <div className="absolute inset-x-0 bottom-0 z-10 space-y-3 rounded-t-3xl bg-surface p-5 text-foreground">
-      <p className="text-lg font-bold">
-        {EXERCISE_INFO[props.exercise].emoji} {r.name} · {r.cameraView === "side" ? "측면" : "정면"}
-      </p>
+      <div className="flex items-baseline justify-between">
+        <p className="text-xl font-extrabold">카메라 점검</p>
+        <p className="text-sm text-muted">
+          {EXERCISE_INFO[props.exercise].emoji} {r.name} · {r.cameraView === "side" ? "측면" : "정면"}
+        </p>
+      </div>
       <p className="text-muted">{r.placement}</p>
       {props.camError && (
         <div className="rounded-2xl border-2 border-danger p-3">
@@ -263,22 +283,24 @@ function ReadyPanel(props: {
           <p className="text-sm text-muted">{props.camError.help}</p>
         </div>
       )}
-      {props.modelStatus === "slow" && <p className="text-warn">준비하는 데 시간이 걸리고 있어요…</p>}
+      {props.modelStatus === "slow" && <p className="text-warn">자세 인식을 준비하는 데 시간이 걸리고 있어요…</p>}
       {props.modelStatus === "error" && (
         <BigButton small variant="secondary" onClick={props.onRetryModel}>
           자세 인식 다시 준비하기
         </BigButton>
       )}
       {!camOn ? (
-        <BigButton onClick={props.onCamera} disabled={props.camStatus === "starting"}>
-          📷 카메라 켜기
-        </BigButton>
-      ) : !props.armed ? (
-        <BigButton onClick={props.onArm}>🔊 소리 켜고 시작</BigButton>
+        props.camStatus === "error" ? (
+          <BigButton onClick={props.onCamera}>📷 카메라 다시 켜기</BigButton>
+        ) : (
+          <p className="text-center text-lg font-bold">카메라를 켜는 중…</p>
+        )
+      ) : !modelReady ? (
+        <p className="text-center text-lg font-bold">자세 인식을 준비하는 중…</p>
       ) : (
         <div className="space-y-2">
-          <p className="text-center text-lg font-bold">
-            {props.paused ? "전신이 보이게 서 주세요" : "좋아요! 그대로 2초 유지하면 시작해요"}
+          <p className={`text-center text-lg font-bold ${props.paused ? "" : "text-accent"}`}>
+            {props.paused ? "전신이 보이게 서 주세요" : "✓ 인식되었습니다 — 그대로 잠시만요"}
           </p>
           <div className="h-3 overflow-hidden rounded-full bg-surface-2">
             <div className="h-full rounded-full bg-accent transition-[width]" style={{ width: `${props.progress * 100}%` }} />

@@ -273,6 +273,7 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
         const held = f.t - goodSinceRef.current;
         setReadyProgress(Math.min(1, held / READY_HOLD_SEC));
         if (held >= READY_HOLD_SEC) {
+          say("인식되었습니다");
           setCountdown(COUNTDOWN_SEC);
           setPhase("countdown");
         }
