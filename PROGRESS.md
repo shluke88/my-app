@@ -17,7 +17,7 @@
 | 3 | 푸시업·플랭크 가로 화면 | 보류(세로 기준 유지) |
 | 4 | 세션 기록 목록 화면 | 만들지 않음(저장만 함) |
 | 5 | 사용하지 않는 MediaPipe 파일(`vision_wasm_module_internal.*`) | `trash-can/`으로 옮김. 직접 확인 후 삭제해 주세요 |
-| 7 | 키·몸무게 | 받기로 결정(사용자). CLAUDE.md·PRD만 고침. PLAN.md 88행·DESIGN.md 204행에는 아직 "받지 않는다"가 남아 있음 — 고칠지 확인 필요 |
+| 7 | 키·몸무게 | 받기로 결정(사용자). CLAUDE.md·PRD만 고침. PLAN.md·DESIGN.md도 고침(사용자 승인) |
 | 8 | 화면 색 | 사용자가 준 시작 화면 그림처럼 앱 전체를 밝게 통일 |
 | 6 | 모델 파일(`public/mediapipe/`) 커밋 | 커밋하지 않음(사용자 답변). `.gitignore` 대신 `.git/info/exclude`에 등록해 제외함 |
 
