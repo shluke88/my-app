@@ -8,7 +8,8 @@ import SafetyNotice from "@/components/common/SafetyNotice";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import PixelCharacter from "@/components/character/PixelCharacter";
 import { useCharacter, useSettings } from "@/hooks/useStored";
-import { EXERCISE_RULES, ROUTINE, SINGLE_ORDER } from "@/lib/exercise/rules";
+import BottomTabs from "@/components/common/BottomTabs";
+import { EXERCISE_RULES, ROUTINE } from "@/lib/exercise/rules";
 import { BODY_PARTS, PART_LABEL } from "@/lib/growth/config";
 
 export default function HomeScreen() {
@@ -31,7 +32,7 @@ export default function HomeScreen() {
         }
       />
       <main className="flex flex-1 flex-col gap-4 px-4 pb-8">
-        <Link href="/character" className="block rounded-3xl border border-line bg-surface p-3 shadow-sm" aria-label="내 캐릭터 보기">
+        <Link href="/profile" className="block rounded-3xl border border-line bg-surface p-3 shadow-sm" aria-label="내 캐릭터 보기">
           <PixelCharacter character={character} size={176} className="mx-auto" />
           <div className="mt-2 grid grid-cols-4 gap-1 text-center text-sm">
             {BODY_PARTS.map((p) => (
@@ -50,21 +51,15 @@ export default function HomeScreen() {
           </p>
         </div>
 
-        <section>
-          <h2 className="mb-2 text-lg font-bold">운동 하나만 하기</h2>
-          <div className="grid grid-cols-3 gap-2">
-            {SINGLE_ORDER.map((id) => (
-              <BigButton key={id} href={`/workout?exercise=${id}`} variant="secondary" small>
-                {EXERCISE_RULES[id].name}
-              </BigButton>
-            ))}
-          </div>
-        </section>
+        <BigButton href="/exercises" variant="secondary">
+          운동 하나만 하기 ›
+        </BigButton>
 
-        <div className="mt-auto">
+        <div className="mt-auto pt-2">
           <SafetyNotice />
         </div>
       </main>
+      <BottomTabs />
     </>
   );
 }

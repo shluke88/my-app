@@ -10,10 +10,19 @@ interface CameraViewProps {
   /** 인식이 불안정할 때 어둡게 */
   dimmed?: boolean;
   className?: string;
+  /** cover: 화면을 꽉 채움(운동 화면) / contain: 영상 전체가 보임 */
+  fit?: "cover" | "contain";
   children?: ReactNode;
 }
 
-export default function CameraView({ videoRef, mirrored = true, dimmed, className = "", children }: CameraViewProps) {
+export default function CameraView({
+  videoRef,
+  mirrored = true,
+  dimmed,
+  className = "",
+  fit = "contain",
+  children,
+}: CameraViewProps) {
   return (
     <div className={`relative overflow-hidden bg-black ${className}`}>
       <div className="absolute inset-0" style={{ transform: mirrored ? "scaleX(-1)" : undefined }}>
@@ -22,7 +31,7 @@ export default function CameraView({ videoRef, mirrored = true, dimmed, classNam
           playsInline
           muted
           autoPlay
-          className={`h-full w-full object-contain transition ${dimmed ? "brightness-50" : ""}`}
+          className={`h-full w-full transition ${fit === "cover" ? "object-cover" : "object-contain"} ${dimmed ? "brightness-50" : ""}`}
         />
         {children}
       </div>
