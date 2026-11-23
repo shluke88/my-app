@@ -14,6 +14,7 @@ import { usePoseLoop, type PoseFrame } from "@/hooks/usePoseLoop";
 import { EXERCISE_RULES } from "@/lib/exercise/rules";
 import { ConfidenceGate } from "@/lib/pose/confidence";
 import { minVisibility, pickSide, toPose } from "@/lib/pose/landmarks";
+import { SquatJudge } from "@/lib/exercise/judges/squat";
 import type { ExerciseId } from "@/types";
 
 export default function WorkoutScreen() {
@@ -24,6 +25,9 @@ export default function WorkoutScreen() {
   const skeletonRef = useRef<SkeletonHandle>(null);
   const gateRef = useRef(new ConfidenceGate());
   const [paused, setPaused] = useState(true);
+  const squatRef = useRef(new SquatJudge());
+  const [counts, setCounts] = useState({ good: 0, shallow: 0 });
+  const [lastGrade, setLastGrade] = useState<"good" | "shallow" | null>(null);
 
   const onFrame = useCallback(
     (f: PoseFrame) => {
@@ -32,6 +36,16 @@ export default function WorkoutScreen() {
       const minVis = pose ? minVisibility(pose, rule.requiredLandmarks, side) : 0;
       const ev = gateRef.current.update(minVis, f.t);
       if (ev) setPaused(ev === "pause");
+      // 인식이 끊기면 진행 중 반복을 버리고, 인식이 좋을 때만 판정한다
+      if (ev === "pause") squatRef.current.reset();
+      if (pose && !gateRef.current.paused && rule.id === "squat") {
+        const out = squatRef.current.update(pose, f.aspect);
+        if (out.rep) {
+          const grade = out.rep.grade;
+          setLastGrade(grade);
+          setCounts((c) => (grade === "good" ? { ...c, good: c.good + 1 } : { ...c, shallow: c.shallow + 1 }));
+        }
+      }
       skeletonRef.current?.draw(f.landmarks, f.width, f.height, !gateRef.current.paused);
     },
     [rule],
@@ -60,7 +74,20 @@ export default function WorkoutScreen() {
             <span className="font-bold text-accent">● 좋음</span>
           )}
         </p>
-        {model.status === "slow" && <p className="text-warn">준비하는 데 시간이 걸리고 있어요…</p>}
+        {rule.id === "squat" && (
+          <div className="rounded-2xl border border-line bg-surface p-4 text-center">
+            <p className="text-4xl font-extrabold">
+              {counts.good}회{" "}
+              {lastGrade && (
+                <span key={counts.good + counts.shallow} className={`animate-pop inline-block text-2xl ${lastGrade === "good" ? "text-accent" : "text-warn"}`}>
+                  {lastGrade === "good" ? "좋음!" : "얕음"}
+                </span>
+              )}
+            </p>
+            <p className="text-muted">얕은 반복 {counts.shallow}회</p>
+          </div>
+        )}
+        {model.status === "slow" &&<p className="text-warn">준비하는 데 시간이 걸리고 있어요…</p>}
         {model.status === "error" && (
           <div className="rounded-2xl border-2 border-danger p-4">
             <p className="font-bold">자세 인식을 준비하지 못했어요.</p>
