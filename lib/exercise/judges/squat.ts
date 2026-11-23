@@ -1,46 +1,45 @@
-// 스쿼트 판정 (PLAN 작업 10). 측면에서 신뢰도가 높은 쪽 몸의 엉덩이-무릎-발목 각도로 반복을 센다.
+// 스쿼트 판정 (PLAN 작업 10·12). 측면에서 신뢰도가 높은 쪽 몸의 엉덩이-무릎-발목 각도로 반복을 센다.
 import { EXERCISE_RULES } from "@/lib/exercise/rules";
 import { AngleRepCounter, type RepEvent } from "@/lib/exercise/stateMachine";
 import { jointAngle, tiltFromVertical } from "@/lib/pose/angles";
 import { pickSide, toPoint, type Pose } from "@/lib/pose/landmarks";
 import { SmootherSet } from "@/lib/pose/smoothing";
+import type { Judge, JudgeResult } from "./types";
 
-export interface SquatFrame {
-  /** 무릎 각도 (평균) */
-  knee: number;
-  /** 어깨-엉덩이 선이 수직에서 기운 각도 (평균) */
-  lean: number;
-  rep: RepEvent | null;
-}
+const rule = EXERCISE_RULES.squat;
 
-export class SquatJudge {
-  readonly rule = EXERCISE_RULES.squat;
+export class SquatJudge implements Judge {
   private counter = new AngleRepCounter({
-    startDeg: this.rule.thresholds.startDeg,
-    descendDeg: this.rule.thresholds.descendDeg,
-    goodDeg: this.rule.thresholds.goodDeg,
-    hysteresisDeg: this.rule.hysteresisDeg,
+    startDeg: rule.thresholds.startDeg,
+    descendDeg: rule.thresholds.descendDeg,
+    goodDeg: rule.thresholds.goodDeg,
+    hysteresisDeg: rule.hysteresisDeg,
   });
   private smooth = new SmootherSet();
 
-  /** 무릎 각도와 기울기를 직접 넣는 계산 (테스트·다른 입력용) */
-  updateAngles(kneeRaw: number, leanRaw: number): SquatFrame {
+  /** 무릎 각도와 기울기를 직접 넣는 계산 (테스트용) */
+  updateAngles(kneeRaw: number, leanRaw: number): { knee: number; lean: number; rep: RepEvent | null } {
     const knee = this.smooth.push("knee", kneeRaw);
     const lean = this.smooth.push("lean", leanRaw);
     return { knee, lean, rep: this.counter.update(knee) };
   }
 
-  update(pose: Pose, aspect: number): SquatFrame {
-    const side = pickSide(pose, this.rule.requiredLandmarks);
+  update(pose: Pose, aspect: number): JudgeResult {
+    const side = pickSide(pose, rule.requiredLandmarks);
     const p = (n: "shoulder" | "hip" | "knee" | "ankle") => toPoint(pose[`${n}${side}`], aspect);
-    return this.updateAngles(jointAngle(p("hip"), p("knee"), p("ankle")), tiltFromVertical(p("shoulder"), p("hip")));
+    const { lean, rep } = this.updateAngles(jointAngle(p("hip"), p("knee"), p("ankle")), tiltFromVertical(p("shoulder"), p("hip")));
+    const knee = pose[`knee${side}`];
+    return {
+      rep,
+      rangeCueIds: rep?.grade === "shallow" ? ["squat-depth"] : [],
+      // 내려가 있는 동안 상체가 45° 넘게 기울면
+      postureCueIds: this.counter.inRep && lean > rule.thresholds.leanMaxDeg ? ["squat-lean"] : [],
+      valid: true,
+      focus: { x: knee.x, y: knee.y },
+      side,
+    };
   }
 
-  get inRep(): boolean {
-    return this.counter.inRep;
-  }
-
-  /** 인식 일시 정지 때 호출: 진행 중 반복을 버린다 */
   reset(): void {
     this.counter.reset();
     this.smooth.reset();
