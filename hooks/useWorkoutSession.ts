@@ -20,6 +20,7 @@ import { ConfidenceGate } from "@/lib/pose/confidence";
 import { minVisibility, pickSide, toPose } from "@/lib/pose/landmarks";
 import { addXp } from "@/lib/growth/level";
 import { drawItem } from "@/lib/growth/itemDraw";
+import { estimateKcal } from "@/lib/growth/calories";
 import { PART_LABEL } from "@/lib/growth/config";
 import { addSession, loadCharacter, loadSettings, saveCharacter } from "@/lib/storage/localStore";
 import { speak, stopSpeech, unlockSpeech } from "@/lib/voice/speech";
@@ -37,6 +38,9 @@ interface Current {
   lungeSide: 1 | 2;
   sideGood: number;
   pausedBase: number;
+  /** 실제로 운동한 시간(초): 운동 단계에서 인식이 좋을 때만 쌓인다 (열량 추정용) */
+  activeSec: number;
+  lastActiveT: number | null;
 }
 
 const emptyCurrent = (): Current => ({
@@ -48,6 +52,8 @@ const emptyCurrent = (): Current => ({
   lungeSide: 1,
   sideGood: 0,
   pausedBase: 0,
+  activeSec: 0,
+  lastActiveT: null,
 });
 
 export interface Toast {
@@ -161,6 +167,8 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
       cueCount: c.cueCount,
       pausedSec: Math.max(0, Math.round(pausedSec)),
       xpGained: c.xp,
+      activeSec: Math.round(c.activeSec),
+      kcal: Math.round(estimateKcal(r.id, c.activeSec, loadSettings().weightKg) * 10) / 10,
     };
   }, [order]);
 
@@ -261,6 +269,7 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
       if (s) setSide((old) => (old === s ? old : s));
 
       if (ev === "pause") {
+        curRef.current.lastActiveT = null; // 인식이 끊긴 동안은 운동 시간에 넣지 않는다
         // 진행 중 반복은 버린다 (경험치 없음)
         judgeRef.current.reset();
         cueRef.current.reset();
@@ -282,6 +291,13 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
         return;
       }
       if (p !== "active") return;
+
+      // 실제 운동 시간 누적 (프레임 사이 간격, 너무 긴 간격은 0.5초로 자름)
+      {
+        const cur = curRef.current;
+        if (cur.lastActiveT !== null) cur.activeSec += Math.min(0.5, Math.max(0, f.t - cur.lastActiveT));
+        cur.lastActiveT = f.t;
+      }
 
       const out = judgeRef.current.update(pose, f.aspect, f.t);
       // 세지 않는 이유와 개발용 측정값 (바뀔 때만 다시 그림)
@@ -445,6 +461,8 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
     setPhaseState("active");
     setPaused(false);
     setCounts({ good: 7, shallow: 0, holdSec: 12 });
+    curRef.current.good = 7;
+    curRef.current.activeSec = 95; // 결과 화면 열량 미리보기용
     const text = EXERCISE_RULES[order[idxRef.current]].cues[0]?.text ?? "";
     setBanner({ text, key: nextKey() });
     setGrade({ grade: "good", x: 0.52, y: 0.55, key: nextKey() });

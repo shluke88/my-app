@@ -3,9 +3,10 @@
 // 결과 단계 (PLAN 작업 15·22): 시간, 반복 수(좋음), 얕은 반복, 플랭크 유지, 안내, 인식 중단, 부위별 경험치·레벨 변화, 새 아이템
 import BigButton from "@/components/common/BigButton";
 import PixelCharacter from "@/components/character/PixelCharacter";
-import { useCharacter } from "@/hooks/useStored";
+import { useCharacter, useSettings } from "@/hooks/useStored";
 import { BODY_PARTS, MAX_LEVEL, PART_LABEL, RARITY_LABEL } from "@/lib/growth/config";
 import { xpToNext } from "@/lib/growth/level";
+import { formatKcal, sessionKcal } from "@/lib/growth/calories";
 import { ITEM_BY_ID, itemImage } from "@/lib/growth/items";
 import Image from "next/image";
 import { EXERCISE_RULES } from "@/lib/exercise/rules";
@@ -42,6 +43,7 @@ export default function ResultSummary({
   startLevels: Record<BodyPart, number>;
 }) {
   const { character } = useCharacter();
+  const { settings } = useSettings();
   const ex = session.exercises;
   const reps = ex.filter((e) => e.exercise !== "plank");
   const good = reps.reduce((a, e) => a + e.goodReps, 0);
@@ -49,6 +51,8 @@ export default function ResultSummary({
   const hold = ex.find((e) => e.exercise === "plank")?.holdSec;
   const cues = ex.reduce((a, e) => a + e.cueCount, 0);
   const paused = ex.reduce((a, e) => a + e.pausedSec, 0);
+  const totalKcal = sessionKcal(session);
+  const weightKg = settings.weightKg;
   const xpBy = (p: BodyPart) =>
     ex.filter((e) => EXERCISE_RULES[e.exercise].bodyPart === p).reduce((a, e) => a + e.xpGained, 0);
 
@@ -67,6 +71,27 @@ export default function ResultSummary({
         ))}
         <PixelCharacter character={character} size={170} className="relative" />
       </div>
+      {/* 소모 열량 (추정) + 운동별 열량 */}
+      <section className="rounded-3xl bg-gradient-to-b from-light-card to-light-card-2 p-4 text-light-ink">
+        <div className="flex items-baseline justify-between">
+          <p className="font-bold opacity-75">🔥 소모 열량</p>
+          <p className="text-xs opacity-60">{weightKg ? `몸무게 ${weightKg}kg 기준 추정` : "65kg 기준 추정"}</p>
+        </div>
+        <p className="text-4xl font-extrabold">
+          약 {formatKcal(totalKcal)}
+          <span className="ml-1 text-lg">kcal</span>
+        </p>
+        {ex.length > 1 && (
+          <ul className="mt-2 grid grid-cols-2 gap-1.5 text-sm">
+            {ex.map((e, i) => (
+              <li key={i} className="flex justify-between rounded-full bg-white/60 px-3 py-1 font-bold">
+                <span>{EXERCISE_RULES[e.exercise].name}</span>
+                <span>{formatKcal(e.kcal ?? 0)} kcal</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
       <section className="grid grid-cols-2 gap-2 text-center">
         <Stat label="시간" value={formatDuration(session.durationSec)} />
         <Stat label="반복(좋음)" value={`${good}회`} />

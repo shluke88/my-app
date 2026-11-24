@@ -50,6 +50,10 @@ export interface ExerciseResult {
   /** 인식 중단 시간(초) */
   pausedSec: number;
   xpGained: number;
+  /** 실제로 운동한 시간(초). 인식 중단·쉬는 시간 제외 */
+  activeSec?: number;
+  /** 추정 소모 열량(kcal) */
+  kcal?: number;
 }
 
 /** 세션 기록 — 저장 이름: posefit:sessions (최근 30개) */

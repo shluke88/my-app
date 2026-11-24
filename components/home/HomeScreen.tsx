@@ -4,6 +4,7 @@
 import Link from "next/link";
 import BigButton from "@/components/common/BigButton";
 import GearIcon from "@/components/common/GearIcon";
+import CalorieCard from "./CalorieCard";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import PixelCharacter from "@/components/character/PixelCharacter";
 import { useCharacter, useSettings } from "@/hooks/useStored";
@@ -58,6 +59,8 @@ export default function HomeScreen() {
         <BigButton href="/exercises" variant="secondary">
           운동 하나만 하기 ›
         </BigButton>
+
+        <CalorieCard />
 
       </main>
       <BottomTabs />

@@ -6,6 +6,7 @@ import PageHeader from "@/components/common/PageHeader";
 import BottomTabs from "@/components/common/BottomTabs";
 import { formatDuration } from "@/components/workout/ResultSummary";
 import { EXERCISE_RULES } from "@/lib/exercise/rules";
+import { formatKcal, sessionKcal } from "@/lib/growth/calories";
 import { loadSessions, readRaw, STORE_EVENT, STORE_KEYS } from "@/lib/storage/localStore";
 
 function subscribe(cb: () => void) {
@@ -42,7 +43,7 @@ export default function HistoryScreen() {
                 </span>
               </div>
               <p className="mt-1 text-light-ink/80">
-                {formatDuration(s.durationSec)} · 반복 {good}회 · 경험치 +{xp}
+                {formatDuration(s.durationSec)} · 반복 {good}회 · 경험치 +{xp} · 🔥 약 {formatKcal(sessionKcal(s))} kcal
                 {s.newItemIds.length > 0 && ` · 🎁 ${s.newItemIds.length}개`}
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">

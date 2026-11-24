@@ -6,6 +6,7 @@ import {
   createDefaultCharacter,
   createDefaultSettings,
   loadCharacter,
+  loadSessions,
   loadSettings,
   readRaw,
   STORE_EVENT,
@@ -35,6 +36,13 @@ export function useCharacter() {
   const raw = useRaw(STORE_KEYS.character);
   const character = useMemo(() => (raw === undefined ? createDefaultCharacter() : loadCharacter()), [raw]);
   return { character, ready: raw !== undefined };
+}
+
+/** 저장된 세션 기록 (최근 30개). 브라우저에서 읽기 전에는 ready=false */
+export function useSessions() {
+  const raw = useRaw(STORE_KEYS.sessions);
+  const sessions = useMemo(() => (raw === undefined ? [] : loadSessions()), [raw]);
+  return { sessions, ready: raw !== undefined };
 }
 
 export function useSettings() {

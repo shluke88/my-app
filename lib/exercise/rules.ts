@@ -145,6 +145,20 @@ export const EXERCISE_RULES: Record<ExerciseId, ExerciseRule> = {
   },
 };
 
+/**
+ * 운동 강도(MET, 쉬고 있을 때의 몇 배로 힘을 쓰는지). 열량 추정용 처음 값 (사용자 요청으로 2단계 열량 기능을 앞당김)
+ * 참고: 신체 활동 강도표(Compendium of Physical Activities)의 맨몸운동 값
+ */
+export const EXERCISE_MET: Record<ExerciseId, number> = {
+  squat: 5.0,
+  lunge: 4.0,
+  pushup: 3.8,
+  plank: 3.0,
+  jumpingJack: 8.0,
+};
+/** 몸무게를 입력하지 않았을 때 열량 추정에 쓰는 몸무게(kg) */
+export const DEFAULT_WEIGHT_KG = 65;
+
 /** 기본 루틴 순서 (PRD: 점핑잭 → 스쿼트 → 푸시업 → 런지 → 플랭크) */
 export const ROUTINE: ExerciseId[] = ["jumpingJack", "squat", "pushup", "lunge", "plank"];
 

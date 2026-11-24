@@ -211,7 +211,7 @@ export default function WorkoutScreen() {
         )}
 
         {s.phase === "rest" && s.idx + 1 < order.length && (
-          <RestScreen left={s.restLeft} next={order[s.idx + 1]} onSkip={s.skipRest} />
+          <RestScreen left={s.restLeft} next={order[s.idx + 1]} last={s.results.at(-1)} onSkip={s.skipRest} />
         )}
 
         {showInfo && (
