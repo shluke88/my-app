@@ -81,6 +81,11 @@ function ConsentStep({ onNext }: { onNext: () => void }) {
           확인하고 시작하기
         </BigButton>
         {(!privacy || !safety) && <p className="text-center text-sm text-muted">두 항목을 눌러 동의해 주세요</p>}
+        {/* 홈 화면에 있던 안내 문구를 처음 동의 화면으로 옮겨 작게 보여 준다 */}
+        <div className="space-y-0.5 text-center text-xs leading-relaxed text-muted">
+          <p>🔒 영상은 이 기기 안에서만 처리되고 저장·전송되지 않습니다.</p>
+          <p>⚠ 참고용 안내입니다. 통증이 있으면 바로 멈추세요.</p>
+        </div>
         <Link href="/privacy" className="block py-2 text-center text-sm text-muted underline underline-offset-2">
           개인정보 처리방침 및 서비스 이용약관
         </Link>

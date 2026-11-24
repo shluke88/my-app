@@ -4,7 +4,6 @@
 import Link from "next/link";
 import BigButton from "@/components/common/BigButton";
 import PageHeader from "@/components/common/PageHeader";
-import SafetyNotice from "@/components/common/SafetyNotice";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import PixelCharacter from "@/components/character/PixelCharacter";
 import { useCharacter, useSettings } from "@/hooks/useStored";
@@ -47,7 +46,7 @@ export default function HomeScreen() {
         <div>
           <BigButton href="/workout?mode=routine">기본 루틴 시작 ▶</BigButton>
           <p className="mt-2 text-center text-sm text-muted">
-            약 7~9분 ·{ROUTINE.map((id) => EXERCISE_RULES[id].name).join(" → ")}
+            약 7~9분 · {ROUTINE.map((id) => EXERCISE_RULES[id].name).join(" → ")}
           </p>
         </div>
 
@@ -55,9 +54,6 @@ export default function HomeScreen() {
           운동 하나만 하기 ›
         </BigButton>
 
-        <div className="mt-auto pt-2">
-          <SafetyNotice />
-        </div>
       </main>
       <BottomTabs />
     </>
