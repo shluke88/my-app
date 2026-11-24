@@ -7,6 +7,7 @@ import BottomTabs from "@/components/common/BottomTabs";
 import PixelCharacter from "@/components/character/PixelCharacter";
 import { useCharacter, useSettings } from "@/hooks/useStored";
 import ItemShelf from "@/components/character/ItemShelf";
+import GachaButton from "@/components/character/ItemGacha";
 import GearIcon from "@/components/common/GearIcon";
 import { BODY_PARTS, MAX_LEVEL, PART_LABEL } from "@/lib/growth/config";
 import { xpToNext } from "@/lib/growth/level";
@@ -59,6 +60,7 @@ export default function ProfileScreen() {
           })}
         </section>
 
+        <GachaButton />
         <ItemShelf character={character} />
       </main>
       <BottomTabs />

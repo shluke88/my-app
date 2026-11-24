@@ -110,6 +110,71 @@ body {
   animation: twinkle 1.6s ease-in-out infinite;
 }
 
+/* 운동 중 레벨 업: 크게 튀어 오르며 빛나고, 빛줄기가 지나간다 */
+@keyframes levelup {
+  0% {
+    transform: scale(0.3) rotate(-6deg);
+    opacity: 0;
+  }
+  45% {
+    transform: scale(1.15) rotate(2deg);
+    opacity: 1;
+  }
+  65% {
+    transform: scale(0.96);
+  }
+  85% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-levelup {
+  animation: levelup 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@keyframes shine {
+  0% {
+    transform: translateX(0) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(400%) skewX(-12deg);
+  }
+}
+.animate-shine {
+  animation: shine 1.4s ease-in-out 0.4s infinite;
+}
+/* 뽑기 상자 흔들림 */
+@keyframes shake {
+  0%,
+  100% {
+    transform: rotate(0) scale(1);
+  }
+  20% {
+    transform: rotate(-12deg) scale(1.05);
+  }
+  40% {
+    transform: rotate(12deg) scale(1.08);
+  }
+  60% {
+    transform: rotate(-10deg) scale(1.12);
+  }
+  80% {
+    transform: rotate(10deg) scale(1.16);
+  }
+}
+.animate-shake {
+  animation: shake 0.45s ease-in-out infinite;
+}
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin-slow {
+  animation: spin-slow 6s linear infinite;
+}
+
 /* 레벨 업·등급 표시가 튀어 오르는 연출 */
 @keyframes pop {
   0% {

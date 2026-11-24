@@ -9,6 +9,7 @@ import { xpToNext } from "@/lib/growth/level";
 import { formatKcal, sessionKcal } from "@/lib/growth/calories";
 import { ITEM_BY_ID, itemImage } from "@/lib/growth/items";
 import Image from "next/image";
+import GachaButton from "@/components/character/ItemGacha";
 import { EXERCISE_RULES } from "@/lib/exercise/rules";
 import type { BodyPart, SessionRecord } from "@/types";
 
@@ -121,6 +122,12 @@ export default function ResultSummary({
           );
         })}
       </section>
+      {(session.ticketsEarned ?? 0) > 0 && (
+        <p className="animate-pop rounded-2xl border-2 border-[#ffd75e] bg-surface p-3 text-center text-lg font-extrabold text-[#ffd75e]">
+          🎁 뽑기권 {session.ticketsEarned}장을 받았어요!
+        </p>
+      )}
+      <GachaButton />
       {session.newItemIds.length > 0 && (
         <section className="space-y-2">
           {session.newItemIds.map((id) => {

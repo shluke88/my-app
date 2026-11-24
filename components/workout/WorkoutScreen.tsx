@@ -175,17 +175,21 @@ export default function WorkoutScreen() {
           />
         )}
 
-        {/* 레벨 업 */}
+        {/* 레벨 업: 화면 가운데 금빛으로 크게 (잘 보이게), 해금 레벨이면 뽑기권 표시 */}
         {s.levelUp && (
-          <div key={s.levelUp.key} className={`animate-pop absolute left-3 z-20 flex items-center gap-2 rounded-2xl border border-line bg-surface px-3.5 py-2.5 font-bold text-foreground shadow-lg ${s.phase === "active" ? "bottom-[10.5rem]" : "bottom-4"}`}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" />
-              <path d="m9 12 2 2 4-4" />
-            </svg>
-            {s.levelUp.text}
+          <div key={s.levelUp.key} className="pointer-events-none absolute inset-x-0 top-[22%] z-20 flex justify-center px-6">
+            <div className="animate-levelup relative w-full max-w-xs overflow-hidden rounded-3xl border-2 border-[#ffe08a] bg-gradient-to-b from-[#ffd75e] via-[#f7b733] to-[#e08a1e] px-5 py-4 text-center text-[#3b2300] shadow-[0_0_40px_rgba(255,200,80,0.75)]">
+              <div className="animate-shine pointer-events-none absolute inset-y-0 -left-1/2 w-1/2 -skew-x-12 bg-white/45" />
+              <p className="text-4xl font-black tracking-wide drop-shadow">LEVEL UP!</p>
+              <p className="mt-1 text-2xl font-extrabold">
+                {s.levelUp.part} Lv.{s.levelUp.level}
+              </p>
+              {s.levelUp.tickets > 0 && (
+                <p className="mt-2 rounded-full bg-white/70 px-3 py-1 text-lg font-extrabold">🎁 뽑기권 +{s.levelUp.tickets}</p>
+              )}
+            </div>
           </div>
         )}
-
         {/* 3·2·1 */}
         {s.phase === "countdown" && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black/30">

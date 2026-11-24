@@ -79,7 +79,7 @@ export function createDefaultCharacter(): CharacterState {
     BodyPart,
     { level: number; xp: number }
   >;
-  return { version: STORAGE_VERSION, parts, unlockedItemIds: [], equipped: {}, updatedAt: new Date(0).toISOString() };
+  return { version: STORAGE_VERSION, parts, unlockedItemIds: [], drawTickets: 0, equipped: {}, updatedAt: new Date(0).toISOString() };
 }
 
 export function createDefaultSettings(): Settings {

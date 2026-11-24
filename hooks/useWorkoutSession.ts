@@ -18,13 +18,12 @@ import {
 } from "@/lib/exercise/rules";
 import { ConfidenceGate } from "@/lib/pose/confidence";
 import { minVisibility, pickSide, toPose } from "@/lib/pose/landmarks";
-import { addXp } from "@/lib/growth/level";
-import { drawItem } from "@/lib/growth/itemDraw";
+import { applyXp } from "@/lib/growth/progress";
 import { estimateKcal } from "@/lib/growth/calories";
 import { PART_LABEL } from "@/lib/growth/config";
 import { addSession, loadCharacter, loadSettings, saveCharacter } from "@/lib/storage/localStore";
 import { speak, stopSpeech, unlockSpeech } from "@/lib/voice/speech";
-import type { BodyPart, CharacterState, ExerciseId, ExerciseResult, SessionRecord } from "@/types";
+import type { BodyPart, ExerciseId, ExerciseResult, SessionRecord } from "@/types";
 
 export type Phase = "ready" | "countdown" | "active" | "rest" | "result";
 
@@ -56,6 +55,15 @@ const emptyCurrent = (): Current => ({
   lastActiveT: null,
 });
 
+/** 운동 중 레벨업 알림 */
+export interface LevelUpInfo {
+  part: string;
+  level: number;
+  /** 이번 레벨업으로 받은 뽑기권 수 */
+  tickets: number;
+  key: number;
+}
+
 export interface Toast {
   text: string;
   key: number;
@@ -76,11 +84,10 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
   const [counts, setCounts] = useState({ good: 0, shallow: 0, holdSec: 0 });
   const [banner, setBanner] = useState<Toast | null>(null);
   const [grade, setGrade] = useState<GradeMark | null>(null);
-  const [levelUp, setLevelUp] = useState<Toast | null>(null);
+  const [levelUp, setLevelUp] = useState<LevelUpInfo | null>(null);
   const [countdown, setCountdown] = useState(COUNTDOWN_SEC);
   const [restLeft, setRestLeft] = useState(REST_SEC);
   const [results, setResults] = useState<ExerciseResult[]>([]);
-  const [newItemIds, setNewItemIds] = useState<string[]>([]);
   const [readyProgress, setReadyProgress] = useState(0);
   const [side, setSide] = useState<"L" | "R" | undefined>(undefined);
   const [hint, setHint] = useState<string | undefined>(undefined);
@@ -107,6 +114,8 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
   const keyRef = useRef(1);
   const resultsRef = useRef<ExerciseResult[]>([]);
   const newItemsRef = useRef<string[]>([]);
+  /** 이 세션에서 받은 뽑기권 수 */
+  const ticketsRef = useRef(0);
   const voiceOnRef = useRef(true);
   const idxRef = useRef(0);
 
@@ -121,29 +130,21 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
     if (voiceOnRef.current) speak(text);
   }, []);
 
-  /** 경험치를 넣고 바로 저장한다. 레벨업·아이템 해금을 알린다 */
-  const gainXp = useCallback((part: BodyPart, amount: number) => {
-    if (amount <= 0) return;
-    const ch: CharacterState = loadCharacter();
-    const r = addXp(ch.parts[part], amount);
-    ch.parts[part] = r.next;
-    const got: string[] = [];
-    for (let i = 0; i < r.unlocks; i++) {
-      const item = drawItem(ch.unlockedItemIds);
-      if (!item) break;
-      ch.unlockedItemIds.push(item.id);
-      got.push(item.id);
-    }
-    saveCharacter(ch);
-    curRef.current.xp += r.gained;
-    if (got.length) {
-      newItemsRef.current = [...newItemsRef.current, ...got];
-      setNewItemIds(newItemsRef.current);
-    }
-    if (r.reachedLevels.length) {
-      setLevelUp({ text: `레벨 업! (${PART_LABEL[part]} LV.${r.next.level})`, key: nextKey() });
-    }
-  }, []);
+  /** 경험치를 넣고 바로 저장한다. 레벨업하면 크게 알리고, 해금 레벨이면 뽑기권을 준다 */
+  const gainXp = useCallback(
+    (part: BodyPart, amount: number) => {
+      if (amount <= 0) return;
+      const { character, result: r, ticketsAdded } = applyXp(loadCharacter(), part, amount);
+      saveCharacter(character);
+      curRef.current.xp += r.gained;
+      if (ticketsAdded > 0) ticketsRef.current += ticketsAdded;
+      if (r.reachedLevels.length) {
+        setLevelUp({ part: PART_LABEL[part], level: r.next.level, tickets: ticketsAdded, key: nextKey() });
+        say(ticketsAdded > 0 ? `레벨 업! 뽑기권을 받았어요` : `레벨 업!`);
+      }
+    },
+    [say],
+  );
 
   const showCue = useCallback(
     (text: string, voice: boolean) => {
@@ -185,6 +186,7 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
       durationSec: Math.round((Date.now() - startedAt) / 1000),
       exercises: resultsRef.current,
       newItemIds: newItemsRef.current,
+      ticketsEarned: ticketsRef.current,
     };
     if (record.exercises.length) addSession(record);
     setResults(resultsRef.current);
@@ -400,7 +402,7 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
   }, [grade]);
   useEffect(() => {
     if (!levelUp) return;
-    const t = window.setTimeout(() => setLevelUp(null), 2500);
+    const t = window.setTimeout(() => setLevelUp(null), 3000);
     return () => window.clearTimeout(t);
   }, [levelUp]);
 
@@ -437,7 +439,6 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
     countdown,
     restLeft,
     results,
-    newItemIds,
     readyProgress,
     side,
     startLevels,
@@ -466,7 +467,7 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
     const text = EXERCISE_RULES[order[idxRef.current]].cues[0]?.text ?? "";
     setBanner({ text, key: nextKey() });
     setGrade({ grade: "good", x: 0.52, y: 0.55, key: nextKey() });
-    setLevelUp({ text: `레벨 업! (${PART_LABEL[EXERCISE_RULES[order[idxRef.current]].bodyPart]} LV.3)`, key: nextKey() });
+    setLevelUp({ part: PART_LABEL[EXERCISE_RULES[order[idxRef.current]].bodyPart], level: 4, tickets: 1, key: nextKey() });
   }
 }
 

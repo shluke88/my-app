@@ -32,6 +32,9 @@ export interface CharacterState {
   version: number;
   parts: Record<BodyPart, PartProgress>;
   unlockedItemIds: string[];
+  /** 해금 레벨에 닿아 받은, 아직 열지 않은 뽑기권 수 */
+  drawTickets?: number;
+  /** 캐릭터 주변에 놓아 둔 아이템 (종류마다 하나) */
   equipped: Partial<Record<ItemSlot, string>>;
   updatedAt: string;
 }
@@ -64,6 +67,8 @@ export interface SessionRecord {
   durationSec: number;
   exercises: ExerciseResult[];
   newItemIds: string[];
+  /** 이 세션에서 받은 뽑기권 수 */
+  ticketsEarned?: number;
 }
 
 export type Gender = "male" | "female";
