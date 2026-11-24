@@ -109,7 +109,9 @@ export const EXERCISE_RULES: Record<ExerciseId, ExerciseRule> = {
     holdUnitSec: 5,
     routineTarget: 30, // 초
     thresholds: {
-      alignMinDeg: 165, // 어깨-엉덩이-발목 165° 이상이면 기준 자세
+      // 사용자 시험 결과 165°·30°는 너무 까다로워 시간이 안 올라가서 넉넉하게 낮춤 (카메라가 비스듬해도 잡히게)
+      alignMinDeg: 150, // 어깨-엉덩이-발목 150° 이상이면 기준 자세
+      horizontalMaxDeg: 40, // 어깨-발목 선이 바닥과 40° 이내면 엎드린 자세로 봄
     },
     hysteresisDeg: 5,
     placement: "휴대폰을 바닥 옆쪽에 세워 두고, 엎드린 몸 옆모습 전체가 보이게 해 주세요",

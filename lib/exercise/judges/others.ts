@@ -109,10 +109,10 @@ export class PlankJudge implements Judge {
     const dt = this.lastT === null ? 0 : Math.min(0.5, Math.max(0, t - this.lastT));
     this.lastT = t;
     const tilt = tiltFromHorizontal(p("shoulder"), p("ankle"));
-    const horizontal = tilt <= HORIZONTAL_MAX_DEG;
+    const horizontal = tilt <= this.rule.thresholds.horizontalMaxDeg;
     const h = pose[`hip${side}`];
     const rawAlign = jointAngle(p("shoulder"), p("hip"), p("ankle"));
-    const debug = `일직선 ${Math.round(rawAlign)}°(기준 ${this.rule.thresholds.alignMinDeg}° 이상) · 바닥과 기울기 ${Math.round(tilt)}°(${HORIZONTAL_MAX_DEG}° 이하)`;
+    const debug = `일직선 ${Math.round(rawAlign)}°(기준 ${this.rule.thresholds.alignMinDeg}° 이상) · 바닥과 기울기 ${Math.round(tilt)}°(${this.rule.thresholds.horizontalMaxDeg}° 이하)`;
     const align = horizontal ? this.smooth.push("align", rawAlign) : rawAlign;
     const aligned = horizontal && align >= this.rule.thresholds.alignMinDeg;
 

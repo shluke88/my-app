@@ -26,6 +26,17 @@ describe("플랭크 판정", () => {
     expect(out.hint).toBeUndefined();
   });
 
+  it("엉덩이가 조금 높은 플랭크(약 157°)와 비스듬한 카메라(약 35°)도 시간이 올라간다", () => {
+    const slightlyHigh = pose({ shoulder: [0.2, 0.6], hip: [0.5, 0.55], ankle: [0.8, 0.62] });
+    const tilted = pose({ shoulder: [0.2, 0.4], hip: [0.5, 0.61], ankle: [0.8, 0.82] });
+    for (const p of [slightlyHigh, tilted]) {
+      const j = new PlankJudge();
+      let out = j.update(p, 1, 0);
+      for (let t = 0.1; t <= 3.01; t += 0.1) out = j.update(p, 1, t);
+      expect(out.holdSec).toBeGreaterThan(2.5);
+    }
+  });
+
   it("서 있거나 정면이면 시간이 그대로이고 이유를 알려 준다", () => {
     const j = new PlankJudge();
     let out = j.update(standing, 1, 0);
