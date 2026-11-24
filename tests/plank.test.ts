@@ -35,6 +35,33 @@ describe("플랭크 판정", () => {
     expect(out.hint).toContain("옆모습");
   });
 
+  it("자세를 잡은 뒤 2초 넘게 무너지면 끝, 1초만 흔들리면 계속", () => {
+    const piked = pose({ shoulder: [0.2, 0.6], hip: [0.5, 0.4], ankle: [0.8, 0.62] });
+    const j = new PlankJudge();
+    let t = 0;
+    const run = (p: Pose, sec: number) => {
+      let out = j.update(p, 1, t);
+      for (let k = 0; k < sec * 10; k++) {
+        t += 0.1;
+        out = j.update(p, 1, t);
+      }
+      return out;
+    };
+    run(lying, 3);
+    expect(run(piked, 1).ended).toBe(false); // 1초 흔들림
+    expect(run(lying, 1).ended).toBe(false); // 다시 잡음
+    const out = run(piked, 2.5); // 2초 넘게 무너짐
+    expect(out.ended).toBe(true);
+    expect(out.holdSec).toBeGreaterThan(3.5);
+  });
+
+  it("자세를 잡기 전에는 무너져 있어도 끝나지 않는다", () => {
+    const j = new PlankJudge();
+    let out = j.update(standing, 1, 0);
+    for (let t = 0.1; t <= 5; t += 0.1) out = j.update(standing, 1, t);
+    expect(out.ended).toBe(false);
+  });
+
   it("엉덩이가 솟으면 시간이 멈추고 '엉덩이를 내려 주세요' 조건", () => {
     const j = new PlankJudge();
     const piked = pose({ shoulder: [0.2, 0.6], hip: [0.5, 0.4], ankle: [0.8, 0.62] });

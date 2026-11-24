@@ -19,6 +19,8 @@ export interface JudgeResult {
   focus?: { x: number; y: number };
   /** 측면 운동에서 고른 몸 쪽 (뼈대 강조용) */
   side?: "L" | "R";
+  /** 플랭크: 자세가 무너져 운동을 끝내야 할 때 true */
+  ended?: boolean;
   /** 지금 세지 않는 이유 (예: 옆모습이 아님). 화면 카드에 보여 준다 */
   hint?: string;
   /** 개발 모드에서만 보여 줄 측정값 (기준값 조정용) */

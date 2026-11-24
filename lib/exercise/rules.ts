@@ -20,6 +20,8 @@ export const HORIZONTAL_MAX_DEG = 30;
 export const READY_HOLD_SEC = 2;
 /** 3·2·1 카운트다운 */
 export const COUNTDOWN_SEC = 3;
+/** 플랭크: 기준 자세를 한 번 잡은 뒤 자세가 이 시간(초) 넘게 계속 무너지면 플랭크를 끝낸다 (사용자 결정) */
+export const PLANK_BREAK_END_SEC = 2;
 /** 루틴 운동 사이 쉬는 시간(초). 사용자 결정으로 10초 (PRD 처음 값은 30초) */
 export const REST_SEC = 10;
 /** 방금 반복의 등급을 보여 주는 시간(초) */

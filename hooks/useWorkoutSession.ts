@@ -338,8 +338,14 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
         );
         checkTarget();
       }
+
+      // 플랭크: 기준 자세를 잡은 뒤 자세가 2초 넘게 무너지면 끝 (루틴은 다음 운동, 운동 하나는 결과 화면)
+      if (out.ended && phaseRef.current === "active") {
+        finishExercise();
+        say("자세가 무너져서 플랭크를 마칠게요");
+      }
     },
-    [checkTarget, gainXp, mode, order, say, setPhase, showCue],
+    [checkTarget, finishExercise, gainXp, mode, order, say, setPhase, showCue],
   );
 
   // 3·2·1 카운트다운

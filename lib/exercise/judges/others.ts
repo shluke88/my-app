@@ -1,5 +1,5 @@
 // 런지·푸시업·플랭크·점핑잭 판정 (PLAN 작업 23~26). 스쿼트와 같은 틀을 따른다.
-import { EXERCISE_RULES, HORIZONTAL_MAX_DEG } from "@/lib/exercise/rules";
+import { EXERCISE_RULES, HORIZONTAL_MAX_DEG, PLANK_BREAK_END_SEC } from "@/lib/exercise/rules";
 import { AngleRepCounter, type RepEvent } from "@/lib/exercise/stateMachine";
 import { jointAngle, offsetFromLine, tiltFromHorizontal, tiltFromVertical } from "@/lib/pose/angles";
 import { pickSide, toPoint, type Pose } from "@/lib/pose/landmarks";
@@ -92,13 +92,16 @@ export class PushupJudge implements Judge {
   }
 }
 
-/* ───── 플랭크: 일직선(165° 이상) + 수평인 시간을 누적, 5초 = 1단위 ───── */
+/* ───── 플랭크: 일직선(165° 이상) + 수평인 시간을 잰다, 5초 = 1단위 ─────
+   사용자 결정: 기준 자세를 한 번 잡은 뒤 자세가 2초 넘게 계속 무너지면 플랭크를 끝낸다 (ended). */
 export class PlankJudge implements Judge {
   private rule = EXERCISE_RULES.plank;
   private smooth = new SmootherSet();
   private holdSec = 0;
   private units = 0;
   private lastT: number | null = null;
+  /** 기준 자세를 잡은 뒤 자세가 무너진 채 이어진 시간(초) */
+  private brokenSec = 0;
 
   update(pose: Pose, aspect: number, t: number): JudgeResult {
     const side = pickSide(pose, this.rule.requiredLandmarks);
@@ -110,42 +113,41 @@ export class PlankJudge implements Judge {
     const h = pose[`hip${side}`];
     const rawAlign = jointAngle(p("shoulder"), p("hip"), p("ankle"));
     const debug = `일직선 ${Math.round(rawAlign)}°(기준 ${this.rule.thresholds.alignMinDeg}° 이상) · 바닥과 기울기 ${Math.round(tilt)}°(${HORIZONTAL_MAX_DEG}° 이하)`;
-    if (!horizontal) {
-      // 서 있거나 카메라가 정면이면 어깨-발목 선이 수평이 아니어서 세지 않는다 → 이유를 알려 준다
-      return {
-        rep: null,
-        rangeCueIds: [],
-        postureCueIds: [],
-        valid: false,
-        holdSec: this.holdSec,
-        focus: { x: h.x, y: h.y },
-        side,
-        hint: "몸 옆모습이 보이게, 바닥과 나란히 엎드려 주세요",
-        debug,
-      };
-    }
-    const align = this.smooth.push("align", rawAlign);
-    const aligned = align >= this.rule.thresholds.alignMinDeg;
+    const align = horizontal ? this.smooth.push("align", rawAlign) : rawAlign;
+    const aligned = horizontal && align >= this.rule.thresholds.alignMinDeg;
+
     let posture: string[] = [];
     if (aligned) this.holdSec += dt;
-    else posture = [offsetFromLine(p("hip"), p("shoulder"), p("ankle")) < 0 ? "plank-hip-high" : "plank-hip-low"];
+    else if (horizontal) posture = [offsetFromLine(p("hip"), p("shoulder"), p("ankle")) < 0 ? "plank-hip-high" : "plank-hip-low"];
+
+    // 한 번이라도 기준 자세를 잡았다면, 무너진 시간이 2초를 넘으면 끝
+    const started = this.holdSec > 0;
+    this.brokenSec = started && !aligned ? this.brokenSec + dt : 0;
+    const ended = started && this.brokenSec >= PLANK_BREAK_END_SEC;
+
     const units = Math.floor(this.holdSec / (this.rule.holdUnitSec ?? 5));
     const newUnits = units - this.units;
     this.units = units;
+
+    let hint: string | undefined;
+    if (started && !aligned) hint = "자세가 무너졌어요! 바로 잡지 않으면 플랭크가 끝나요";
+    else if (!horizontal) hint = "몸 옆모습이 보이게, 바닥과 나란히 엎드려 주세요";
+    else if (!aligned) hint = "어깨-엉덩이-발목을 일직선으로 맞추면 시간이 올라가요";
+
     return {
       rep: null,
       rangeCueIds: [],
       postureCueIds: posture,
-      valid: true,
+      valid: horizontal,
       newHoldUnits: newUnits,
       holdSec: this.holdSec,
       focus: { x: h.x, y: h.y },
       side,
-      hint: aligned ? undefined : "어깨-엉덩이-발목을 일직선으로 맞추면 시간이 올라가요",
+      ended,
+      hint,
       debug,
     };
   }
-
   /** 누적 시간 계산만 따로 (테스트용): 기준 자세인 구간의 길이를 차례로 더한다 */
   addAligned(sec: number): number {
     this.holdSec += sec;
@@ -155,9 +157,10 @@ export class PlankJudge implements Judge {
     return n;
   }
 
-  /** 일시 정지해도 누적 시간은 유지하고, 시간 간격만 새로 잰다 */
+  /** 인식 일시 정지: 누적 시간은 유지하고, 시간 간격과 무너짐 시간만 새로 잰다 (안 보이는 동안은 무너짐으로 치지 않음) */
   reset() {
     this.lastT = null;
+    this.brokenSec = 0;
     this.smooth.reset();
   }
 }
