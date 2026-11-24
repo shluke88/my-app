@@ -20,8 +20,8 @@ export const HORIZONTAL_MAX_DEG = 30;
 export const READY_HOLD_SEC = 2;
 /** 3·2·1 카운트다운 */
 export const COUNTDOWN_SEC = 3;
-/** 루틴 운동 사이 쉬는 시간(초) */
-export const REST_SEC = 30;
+/** 루틴 운동 사이 쉬는 시간(초). 사용자 결정으로 10초 (PRD 처음 값은 30초) */
+export const REST_SEC = 10;
 /** 방금 반복의 등급을 보여 주는 시간(초) */
 export const GRADE_SHOW_SEC = 1.2;
 

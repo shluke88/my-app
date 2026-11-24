@@ -47,7 +47,7 @@ export default function HomeScreen() {
         <div>
           <BigButton href="/workout?mode=routine">기본 루틴 시작 ▶</BigButton>
           <p className="mt-2 text-center text-sm text-muted">
-            약 8~10분 · {ROUTINE.map((id) => EXERCISE_RULES[id].name).join(" → ")}
+            약 7~9분 ·{ROUTINE.map((id) => EXERCISE_RULES[id].name).join(" → ")}
           </p>
         </div>
 

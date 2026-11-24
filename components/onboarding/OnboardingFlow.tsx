@@ -275,7 +275,7 @@ function StartStep() {
             </li>
           );
         })}
-        <li className="pt-1 text-sm text-muted">약 8~10분 · 운동 사이 30초 쉬기</li>
+        <li className="pt-1 text-sm text-muted">약 7~9분 · 운동 사이 10초 쉬기</li>
       </ol>
       <div className="mt-auto space-y-2">
         <BigButton href="/workout?mode=routine" onClick={finish}>

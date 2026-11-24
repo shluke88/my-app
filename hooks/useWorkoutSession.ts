@@ -205,7 +205,7 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
     if (mode === "routine" && idxRef.current < order.length - 1) {
       resultsRef.current = [...resultsRef.current, snapshotResult()];
       setResults(resultsRef.current);
-      say("잘했어요. 30초 쉬어요");
+      say(`잘했어요. ${REST_SEC}초 쉬어요`);
       setRestLeft(REST_SEC);
       setPhase("rest");
     } else {
@@ -350,7 +350,7 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
     return () => window.clearTimeout(t);
   }, [phase, countdown, say, setPhase]);
 
-  // 30초 쉬기 → 끝나면 다음 운동 준비 (자동 시작)
+  // 쉬기(REST_SEC초) → 끝나면 다음 운동 준비 (자동 시작)
   useEffect(() => {
     if (phase !== "rest") return;
     const t = window.setTimeout(() => {

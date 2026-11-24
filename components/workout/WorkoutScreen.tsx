@@ -95,13 +95,21 @@ export default function WorkoutScreen() {
           <span className="text-2xl">‹</span> PoseFit
         </Link>
         <div className="flex-1 text-center">
-          <button type="button" onClick={() => setShowInfo((v) => !v)} className="text-xl font-extrabold">
-            {r.name} <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/60 text-xs">i</span>
-          </button>
-          <p className="text-sm text-white/70">
-            {mode === "routine" ? `${s.idx + 1} / ${s.total}세트` : "자유 모드"}
-            {r.id === "lunge" && mode === "routine" && ` · ${s.lungeSide === 1 ? "첫 다리" : "반대 다리"}`}
-          </p>
+          {checking ? (
+            // 카메라 점검 중에는 운동 이름·세트를 숨기고 단순한 카메라 테스트 화면으로 보여 준다
+            <p className="text-xl font-extrabold">카메라 테스트</p>
+          ) : (
+            <>
+              <button type="button" onClick={() => setShowInfo((v) => !v)} className="text-xl font-extrabold">
+                {r.name}{" "}
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/60 text-xs">i</span>
+              </button>
+              <p className="text-sm text-white/70">
+                {mode === "routine" ? `${s.idx + 1} / ${s.total}세트` : "자유 모드"}
+                {r.id === "lunge" && mode === "routine" && ` · ${s.lungeSide === 1 ? "첫 다리" : "반대 다리"}`}
+              </p>
+            </>
+          )}
         </div>
         <button
           type="button"
@@ -192,7 +200,6 @@ export default function WorkoutScreen() {
             onCamera={camStart}
             onRetryModel={model.retry}
             onFile={startFile}
-            exercise={s.exercise}
           />
         )}
 
@@ -289,20 +296,15 @@ function ReadyPanel(props: {
   onCamera: () => void;
   onRetryModel: () => void;
   onFile: (f: File) => void;
-  exercise: ExerciseId;
 }) {
-  const r = EXERCISE_RULES[props.exercise];
   const camOn = props.camStatus === "ready";
   const modelReady = props.modelStatus === "ready";
   return (
     <div className="absolute inset-x-0 bottom-0 z-10 space-y-3 rounded-t-3xl bg-surface p-5 text-foreground">
       <div className="flex items-baseline justify-between">
-        <p className="text-xl font-extrabold">카메라 점검</p>
-        <p className="text-sm text-muted">
-          {EXERCISE_INFO[props.exercise].emoji} {r.name} · {r.cameraView === "side" ? "측면" : "정면"}
-        </p>
+        <p className="text-xl font-extrabold">카메라 테스트</p>
       </div>
-      <p className="text-muted">{r.placement}</p>
+      <p className="text-muted">휴대폰을 세워 두고 1~3m 뒤로 서서, 머리부터 발끝까지 화면에 보이게 해 주세요.</p>
       {props.camError && (
         <div className="rounded-2xl border-2 border-danger p-3">
           <p className="font-bold">{props.camError.title}</p>
