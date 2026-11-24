@@ -439,6 +439,8 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
 
   /** 개발 모드 전용 미리보기: 카메라 없이 운동 중 화면(횟수·안내 띠·좋음 말풍선·레벨 업)을 보여 준다 */
   function demo() {
+    // 중단을 눌러 결과 화면이면 미리보기를 멈춘다
+    if (phaseRef.current === "result" || phaseRef.current === "rest") return;
     phaseRef.current = "active";
     setPhaseState("active");
     setPaused(false);

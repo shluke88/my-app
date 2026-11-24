@@ -19,7 +19,7 @@ export default function PageHeader({ title, backHref, right }: PageHeaderProps) 
           </Link>
         )}
       </div>
-      <h1 className="flex-1 text-center text-xl font-extrabold">{title}</h1>
+      <h1 className="flex-1 text-center text-xl font-extrabold text-foreground">{title}</h1>
       <div className="flex w-20 justify-end">{right}</div>
     </header>
   );

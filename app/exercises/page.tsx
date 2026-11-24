@@ -23,7 +23,7 @@ export default function ExercisesPage() {
               href={`/workout?exercise=${id}`}
               className="flex items-center gap-4 rounded-3xl border border-line bg-surface p-4 shadow-sm active:bg-surface-2"
             >
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-2 text-3xl">{info.emoji}</span>
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-b from-light-card to-light-card-2 text-3xl">{info.emoji}</span>
               <span className="flex-1">
                 <span className="block text-xl font-extrabold">{r.name}</span>
                 <span className="block text-sm text-muted">{info.summary}</span>

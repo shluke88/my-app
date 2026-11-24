@@ -7,6 +7,7 @@ import BottomTabs from "@/components/common/BottomTabs";
 import PixelCharacter from "@/components/character/PixelCharacter";
 import { useCharacter, useSettings } from "@/hooks/useStored";
 import ItemShelf from "@/components/character/ItemShelf";
+import GearIcon from "@/components/common/GearIcon";
 import { BODY_PARTS, MAX_LEVEL, PART_LABEL } from "@/lib/growth/config";
 import { xpToNext } from "@/lib/growth/level";
 
@@ -19,16 +20,17 @@ export default function ProfileScreen() {
       <PageHeader
         title="프로필"
         right={
-          <Link href="/settings" className="inline-flex min-h-11 items-center text-lg text-muted">
-            ⚙설정
+          <Link href="/settings" aria-label="설정" className="inline-flex min-h-11 items-center text-muted">
+            <GearIcon />
           </Link>
         }
       />
       <main className="flex flex-1 flex-col gap-4 px-4 pb-6">
-        <div className="rounded-3xl border border-line bg-surface p-4 shadow-sm">
-          <PixelCharacter character={character} size={200} className="mx-auto" />
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-light-card to-light-card-2 p-4 shadow-lg shadow-black/30">
+          <div className="pointer-events-none absolute left-1/2 top-4 h-52 w-52 -translate-x-1/2 rounded-full bg-white/55" />
+          <PixelCharacter character={character} size={200} className="relative mx-auto" />
           {ready && (settings.gender || settings.heightCm || settings.weightKg) && (
-            <p className="mt-2 text-center text-sm text-muted">
+            <p className="relative mt-2 text-center text-sm font-bold text-light-ink/70">
               {[settings.gender && (settings.gender === "male" ? "남성" : "여성"), settings.heightCm && `키 ${settings.heightCm}cm`, settings.weightKg && `몸무게 ${settings.weightKg}kg`]
                 .filter(Boolean)
                 .join(" · ")}

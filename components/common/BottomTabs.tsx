@@ -35,7 +35,7 @@ const TABS: { href: string; label: string; match: (p: string) => boolean; icon: 
 export default function BottomTabs() {
   const pathname = usePathname() ?? "/";
   return (
-    <nav className="sticky bottom-0 z-30 mt-auto border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+    <nav className="sticky bottom-0 z-30 mt-auto rounded-t-2xl bg-tabbar pb-[env(safe-area-inset-bottom)] text-light-ink">
       <ul className="grid grid-cols-4">
         {TABS.map((t) => {
           const active = t.match(pathname);
@@ -44,7 +44,7 @@ export default function BottomTabs() {
               <Link
                 href={t.href}
                 className={`flex min-h-16 flex-col items-center justify-center gap-0.5 text-xs ${
-                  active ? "font-bold text-foreground" : "text-muted"
+                  active ? "font-bold text-light-ink" : "text-light-ink/55"
                 }`}
                 aria-current={active ? "page" : undefined}
               >

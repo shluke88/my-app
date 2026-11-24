@@ -4,8 +4,8 @@ export default function Logo({ size = 88 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 96 96" fill="none" aria-hidden="true">
       <defs>
         <linearGradient id="pf-logo" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#9aa6c4" />
-          <stop offset="1" stopColor="#1b2547" />
+          <stop offset="0" stopColor="#e2ecf8" />
+          <stop offset="1" stopColor="#7fa3d3" />
         </linearGradient>
       </defs>
       {/* 머리 */}

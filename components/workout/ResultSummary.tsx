@@ -5,6 +5,7 @@ import BigButton from "@/components/common/BigButton";
 import PixelCharacter from "@/components/character/PixelCharacter";
 import { useCharacter } from "@/hooks/useStored";
 import { BODY_PARTS, MAX_LEVEL, PART_LABEL, RARITY_LABEL } from "@/lib/growth/config";
+import { xpToNext } from "@/lib/growth/level";
 import { ITEM_BY_ID, itemImage } from "@/lib/growth/items";
 import Image from "next/image";
 import { EXERCISE_RULES } from "@/lib/exercise/rules";
@@ -16,6 +17,16 @@ const RARITY_BORDER = {
   epic: "border-rarity-epic",
   legend: "border-rarity-legend",
 } as const;
+
+/** 캐릭터 주변 반짝임 위치(%)와 각도 */
+const SPARKS = [
+  { x: -18, y: 18, r: -30 },
+  { x: -24, y: 45, r: 0 },
+  { x: -14, y: 72, r: 30 },
+  { x: 104, y: 20, r: 30 },
+  { x: 110, y: 46, r: 0 },
+  { x: 100, y: 74, r: -30 },
+];
 
 export function formatDuration(sec: number): string {
   const m = Math.floor(sec / 60);
@@ -44,7 +55,18 @@ export default function ResultSummary({
   return (
     <main className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pb-6 pt-6">
       <h1 className="text-center text-3xl font-extrabold">운동 완료! 🎉</h1>
-      <PixelCharacter character={character} size={170} className="mx-auto" />
+      {/* 캐릭터 뒤 은은한 빛과 주변 반짝임 */}
+      <div className="relative mx-auto">
+        <div className="pointer-events-none absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#5b8fd6]/30 blur-2xl" />
+        {SPARKS.map((s, i) => (
+          <span
+            key={i}
+            className="animate-twinkle pointer-events-none absolute h-1 w-4 rounded-full bg-[#9fc0ec]"
+            style={{ left: `${s.x}%`, top: `${s.y}%`, transform: `rotate(${s.r}deg)`, animationDelay: `${i * 0.15}s` }}
+          />
+        ))}
+        <PixelCharacter character={character} size={170} className="relative" />
+      </div>
       <section className="grid grid-cols-2 gap-2 text-center">
         <Stat label="시간" value={formatDuration(session.durationSec)} />
         <Stat label="반복(좋음)" value={`${good}회`} />
@@ -53,16 +75,22 @@ export default function ResultSummary({
         {hold !== undefined && <Stat label="안내" value={`${cues}번`} />}
         <Stat label="인식 중단" value={`${paused}초`} />
       </section>
-      <section className="space-y-2 rounded-3xl border border-line bg-surface p-4">
+      {/* 부위별: 이름 · 현재 레벨 진행 막대 · 얻은 경험치 · 레벨 */}
+      <section className="space-y-2.5 rounded-3xl border border-line bg-surface p-4">
         {BODY_PARTS.map((p) => {
-          const now = character.parts[p].level;
+          const { level: now, xp } = character.parts[p];
           const up = now > startLevels[p];
+          const max = now >= MAX_LEVEL;
+          const ratio = max ? 1 : xp / xpToNext(now);
           return (
-            <div key={p} className="flex items-center justify-between text-lg">
-              <span className="font-bold">{PART_LABEL[p]}</span>
-              <span className="text-muted">+{xpBy(p)}</span>
-              <span className={up ? "font-extrabold text-accent" : ""}>
-                {now >= MAX_LEVEL ? "최대 레벨" : up ? `Lv${startLevels[p]} → Lv${now} ⬆` : `Lv${now}`}
+            <div key={p} className="flex items-center gap-3 text-base">
+              <span className="w-10 font-bold">{PART_LABEL[p]}</span>
+              <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-surface-2">
+                <div className="h-full rounded-full bg-gradient-to-r from-primary-2 to-primary" style={{ width: `${Math.max(4, ratio * 100)}%` }} />
+              </div>
+              <span className="w-12 text-right text-muted">+{xpBy(p)}</span>
+              <span className={`w-20 text-right ${up ? "font-extrabold text-accent" : "text-muted"}`}>
+                {max ? "최대" : up ? `Lv${startLevels[p]}→${now} ⬆` : `Lv${now}`}
               </span>
             </div>
           );
@@ -96,7 +124,7 @@ export default function ResultSummary({
       )}
       <div className="mt-auto grid grid-cols-2 gap-2">
         <BigButton href="/profile" variant="secondary" small>
-          캐릭터 꾸미러 가기
+          캐릭터 보기
         </BigButton>
         <BigButton href="/" small>
           처음으로

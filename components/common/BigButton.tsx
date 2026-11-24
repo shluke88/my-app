@@ -6,7 +6,7 @@ type Variant = "primary" | "secondary" | "danger" | "ghost";
 
 const VARIANT_CLASS: Record<Variant, string> = {
   primary:
-    "bg-gradient-to-r from-primary via-primary to-primary-2 text-primary-ink shadow-lg shadow-primary/25 active:brightness-110",
+    "bg-gradient-to-r from-primary to-primary-2 text-primary-ink shadow-lg shadow-black/30 active:brightness-110",
   secondary: "bg-surface text-foreground border border-line shadow-sm active:bg-surface-2",
   danger: "bg-danger text-white active:brightness-90",
   ghost: "bg-transparent text-foreground border border-line active:bg-surface",

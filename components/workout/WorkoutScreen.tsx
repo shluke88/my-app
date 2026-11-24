@@ -88,9 +88,9 @@ export default function WorkoutScreen() {
   }
 
   return (
-    <div className="flex h-dvh flex-col bg-black">
+    <div className="flex h-dvh flex-col bg-[#111827]">
       {/* 위 막대 */}
-      <header className="z-30 flex items-center gap-2 bg-[#252a3a] px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] text-white">
+      <header className="z-30 flex items-center gap-2 bg-[#1d2539] px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] text-white">
         <Link href="/" className="flex min-h-11 items-center gap-1 text-lg font-bold" onClick={() => camStop()}>
           <span className="text-2xl">‹</span> PoseFit
         </Link>
@@ -177,7 +177,7 @@ export default function WorkoutScreen() {
 
         {/* 레벨 업 */}
         {s.levelUp && (
-          <div key={s.levelUp.key} className={`animate-pop absolute left-3 z-20 flex items-center gap-2 rounded-2xl bg-white px-3.5 py-2.5 font-bold text-foreground shadow-lg ${s.phase === "active" ? "bottom-[10.5rem]" : "bottom-4"}`}>
+          <div key={s.levelUp.key} className={`animate-pop absolute left-3 z-20 flex items-center gap-2 rounded-2xl border border-line bg-surface px-3.5 py-2.5 font-bold text-foreground shadow-lg ${s.phase === "active" ? "bottom-[10.5rem]" : "bottom-4"}`}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" />
               <path d="m9 12 2 2 4-4" />

@@ -1,20 +1,26 @@
 @import "tailwindcss";
 
-/* Design Ref: §5 — 스마트폰 세로 화면 공통 틀. 사용자가 준 시작 화면 그림처럼 밝은 바탕 + 남색 버튼. */
+/* Design Ref: §5 — 스마트폰 세로 화면 공통 틀. 사용자가 준 UI 그림처럼 어두운 남색 바탕 + 옅은 하늘색 강조. */
 :root {
-  --background: #eef1f7; /* 바탕: 밝은 회청색 */
-  --background-2: #dfe8f8; /* 바탕 아래쪽 옅은 파랑 (그라데이션) */
-  --surface: #ffffff; /* 카드 */
-  --surface-2: #e6eaf2; /* 눌린 카드, 막대 바탕 */
-  --line: #d7dce8; /* 카드 테두리 */
-  --foreground: #1c2340; /* 기본 글자: 짙은 남색 */
-  --muted: #5f6782; /* 보조 글자 */
-  --primary: #1b2547; /* 주요 버튼: 남색 */
-  --primary-2: #2c4a7e; /* 주요 버튼 그라데이션 끝 */
+  color-scheme: dark;
+  --background: #1d2539; /* 바탕: 어두운 남색 */
+  --background-2: #111827; /* 바탕 아래쪽 더 어두운 남색 (그라데이션) */
+  --surface: #283249; /* 카드 */
+  --surface-2: #343f5a; /* 눌린 카드, 막대 바탕, 칩 */
+  --line: #3b4763; /* 카드 테두리 */
+  --foreground: #e8eef8; /* 기본 글자: 밝은 회백색 */
+  --muted: #9ba9c3; /* 보조 글자 */
+  --primary: #86abd9; /* 주요 버튼: 옅은 하늘색 */
+  --primary-2: #4f78b0; /* 주요 버튼 그라데이션 끝 */
   --primary-ink: #ffffff; /* 주요 버튼 글자 */
-  --accent: #14a06c; /* 좋음·인식 좋음 (초록) */
-  --warn: #d97b00; /* 얕음·안내 (주황) */
-  --danger: #e5484d; /* 오류·삭제 (빨강) */
+  --brand: #9fc0ec; /* 제목 "PoseFit" 글자 */
+  --light-card: #cfe1f4; /* 밝은 카드 (홈 캐릭터·기록) 위쪽 */
+  --light-card-2: #8fb3dc; /* 밝은 카드 아래쪽 */
+  --light-ink: #18213a; /* 밝은 카드 위 글자 */
+  --tabbar: #c9d6e8; /* 아래 탭 막대 */
+  --accent: #4ade80; /* 좋음·인식 좋음 (초록) */
+  --warn: #fbbf24; /* 얕음·안내 (주황) */
+  --danger: #f87171; /* 오류·삭제 (빨강) */
   /* 아이템 등급 테두리 색: 노말 회색, 레어 파랑, 에픽 보라, 레전드 주황 */
   --rarity-normal: #9aa0aa;
   --rarity-rare: #4da3ff;
@@ -28,6 +34,11 @@
   --color-surface-2: var(--surface-2);
   --color-line: var(--line);
   --color-primary-2: var(--primary-2);
+  --color-brand: var(--brand);
+  --color-light-card: var(--light-card);
+  --color-light-card-2: var(--light-card-2);
+  --color-light-ink: var(--light-ink);
+  --color-tabbar: var(--tabbar);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-primary: var(--primary);
@@ -83,6 +94,20 @@ body {
 }
 .animate-float {
   animation: float 3.2s ease-in-out infinite;
+}
+
+/* 결과 화면 반짝임 */
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.animate-twinkle {
+  animation: twinkle 1.6s ease-in-out infinite;
 }
 
 /* 레벨 업·등급 표시가 튀어 오르는 연출 */
