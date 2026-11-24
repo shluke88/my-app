@@ -27,7 +27,7 @@ export class SquatJudge implements Judge {
   update(pose: Pose, aspect: number): JudgeResult {
     const side = pickSide(pose, rule.requiredLandmarks);
     const p = (n: "shoulder" | "hip" | "knee" | "ankle") => toPoint(pose[`${n}${side}`], aspect);
-    const { lean, rep } = this.updateAngles(jointAngle(p("hip"), p("knee"), p("ankle")), tiltFromVertical(p("shoulder"), p("hip")));
+    const { knee: kneeDeg, lean, rep } = this.updateAngles(jointAngle(p("hip"), p("knee"), p("ankle")), tiltFromVertical(p("shoulder"), p("hip")));
     const knee = pose[`knee${side}`];
     return {
       rep,
@@ -37,6 +37,7 @@ export class SquatJudge implements Judge {
       valid: true,
       focus: { x: knee.x, y: knee.y },
       side,
+      debug: `무릎 ${Math.round(kneeDeg)}°(하강 ${rule.thresholds.descendDeg}° · 좋음 ${rule.thresholds.goodDeg}° 이하) · 상체 기울기 ${Math.round(lean)}°`,
     };
   }
 

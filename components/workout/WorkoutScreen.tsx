@@ -150,6 +150,13 @@ export default function WorkoutScreen() {
           )}
         </div>
 
+        {/* 개발 모드 전용: 실시간 측정값 (기준값 조정용, 배포된 앱에는 안 보임) */}
+        {process.env.NODE_ENV === "development" && s.phase === "active" && s.debug && (
+          <p className="absolute left-2 top-24 z-10 max-w-[90%] rounded-lg bg-black/60 px-2 py-1 font-mono text-xs text-white">
+            🛠 {s.debug}
+          </p>
+        )}
+
         {/* 파란 안내 띠 */}
         {s.banner && (
           <div key={s.banner.key} className="animate-pop absolute inset-x-3 top-3 z-10 rounded-2xl bg-[#2b8cff] px-4 py-3.5 text-center text-2xl font-extrabold text-white shadow-lg">
@@ -235,9 +242,14 @@ export default function WorkoutScreen() {
                   ? `${s.counts.good} / ${target}회`
                   : `${s.counts.good}회`}
             </p>
-            <p className="mt-1 text-lg text-muted">
-              {isHold ? "기준 자세로 버틴 시간" : `얕은 횟수: ${s.counts.shallow}`}
-            </p>
+            {s.phase === "active" && s.hint ? (
+              // 지금 세지 않는 이유 (예: 옆모습이 아님, 일직선이 아님)
+              <p className="mt-1 text-base font-bold text-warn">{s.hint}</p>
+            ) : (
+              <p className="mt-1 text-lg text-muted">
+                {isHold ? "기준 자세로 버틴 시간" : `얕은 횟수: ${s.counts.shallow}`}
+              </p>
+            )}
             <div className="mt-2 flex items-center justify-center gap-2">
               {mode === "routine" ? (
                 order.map((id, i) => (

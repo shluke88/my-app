@@ -77,6 +77,8 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
   const [newItemIds, setNewItemIds] = useState<string[]>([]);
   const [readyProgress, setReadyProgress] = useState(0);
   const [side, setSide] = useState<"L" | "R" | undefined>(undefined);
+  const [hint, setHint] = useState<string | undefined>(undefined);
+  const [debug, setDebug] = useState<string | undefined>(undefined);
   const [lungeSide, setLungeSide] = useState<1 | 2>(1);
   const [startLevels] = useState<Record<BodyPart, number>>(() => {
     const c = loadCharacter();
@@ -282,6 +284,9 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
       if (p !== "active") return;
 
       const out = judgeRef.current.update(pose, f.aspect, f.t);
+      // 세지 않는 이유와 개발용 측정값 (바뀔 때만 다시 그림)
+      setHint((old) => (old === out.hint ? old : out.hint));
+      if (process.env.NODE_ENV === "development") setDebug((old) => (old === out.debug ? old : out.debug));
       const c = curRef.current;
 
       // 자세형 안내 (0.5초 지속)
@@ -416,6 +421,8 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
     startLevels,
     savedSession,
     lungeSide,
+    hint,
+    debug,
     arm,
     onFrame,
     stop: finishSession,

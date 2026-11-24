@@ -39,6 +39,7 @@ export class LungeJudge implements Judge {
       valid: true,
       focus: { x: k.x, y: k.y },
       side,
+      debug: `앞 무릎 ${Math.round(knee)}°(하강 ${this.rule.thresholds.descendDeg}° · 좋음 ${this.rule.thresholds.goodDeg}° 이하) · 상체 기울기 ${Math.round(lean)}°`,
     };
   }
   reset() {
@@ -62,7 +63,16 @@ export class PushupJudge implements Judge {
       // 서 있는 자세에서 팔을 굽혀도 세지 않는다
       this.counter.reset();
       this.smooth.reset();
-      return { rep: null, rangeCueIds: [], postureCueIds: [], valid: false, focus: { x: e.x, y: e.y }, side };
+      return {
+        rep: null,
+        rangeCueIds: [],
+        postureCueIds: [],
+        valid: false,
+        focus: { x: e.x, y: e.y },
+        side,
+        hint: "몸 옆모습이 보이게, 바닥과 나란히 엎드려 주세요",
+        debug: `바닥과 기울기 ${Math.round(tiltFromHorizontal(p("shoulder"), p("ankle")))}°(${HORIZONTAL_MAX_DEG}° 이하)`,
+      };
     }
     const elbow = this.smooth.push("elbow", jointAngle(p("shoulder"), p("elbow"), p("wrist")));
     const hipLine = this.smooth.push("hip", jointAngle(p("shoulder"), p("hip"), p("ankle")));
@@ -95,10 +105,26 @@ export class PlankJudge implements Judge {
     const p = (n: "shoulder" | "hip" | "ankle") => toPoint(pose[`${n}${side}`], aspect);
     const dt = this.lastT === null ? 0 : Math.min(0.5, Math.max(0, t - this.lastT));
     this.lastT = t;
-    const horizontal = tiltFromHorizontal(p("shoulder"), p("ankle")) <= HORIZONTAL_MAX_DEG;
+    const tilt = tiltFromHorizontal(p("shoulder"), p("ankle"));
+    const horizontal = tilt <= HORIZONTAL_MAX_DEG;
     const h = pose[`hip${side}`];
-    if (!horizontal) return { rep: null, rangeCueIds: [], postureCueIds: [], valid: false, holdSec: this.holdSec, focus: { x: h.x, y: h.y }, side };
-    const align = this.smooth.push("align", jointAngle(p("shoulder"), p("hip"), p("ankle")));
+    const rawAlign = jointAngle(p("shoulder"), p("hip"), p("ankle"));
+    const debug = `일직선 ${Math.round(rawAlign)}°(기준 ${this.rule.thresholds.alignMinDeg}° 이상) · 바닥과 기울기 ${Math.round(tilt)}°(${HORIZONTAL_MAX_DEG}° 이하)`;
+    if (!horizontal) {
+      // 서 있거나 카메라가 정면이면 어깨-발목 선이 수평이 아니어서 세지 않는다 → 이유를 알려 준다
+      return {
+        rep: null,
+        rangeCueIds: [],
+        postureCueIds: [],
+        valid: false,
+        holdSec: this.holdSec,
+        focus: { x: h.x, y: h.y },
+        side,
+        hint: "몸 옆모습이 보이게, 바닥과 나란히 엎드려 주세요",
+        debug,
+      };
+    }
+    const align = this.smooth.push("align", rawAlign);
     const aligned = align >= this.rule.thresholds.alignMinDeg;
     let posture: string[] = [];
     if (aligned) this.holdSec += dt;
@@ -106,7 +132,18 @@ export class PlankJudge implements Judge {
     const units = Math.floor(this.holdSec / (this.rule.holdUnitSec ?? 5));
     const newUnits = units - this.units;
     this.units = units;
-    return { rep: null, rangeCueIds: [], postureCueIds: posture, valid: true, newHoldUnits: newUnits, holdSec: this.holdSec, focus: { x: h.x, y: h.y }, side };
+    return {
+      rep: null,
+      rangeCueIds: [],
+      postureCueIds: posture,
+      valid: true,
+      newHoldUnits: newUnits,
+      holdSec: this.holdSec,
+      focus: { x: h.x, y: h.y },
+      side,
+      hint: aligned ? undefined : "어깨-엉덩이-발목을 일직선으로 맞추면 시간이 올라가요",
+      debug,
+    };
   }
 
   /** 누적 시간 계산만 따로 (테스트용): 기준 자세인 구간의 길이를 차례로 더한다 */
@@ -182,6 +219,7 @@ export class JumpingJackJudge implements Judge {
       postureCueIds: [],
       valid: true,
       focus: { x: (pose.hipL.x + pose.hipR.x) / 2, y: (pose.hipL.y + pose.hipR.y) / 2 },
+      debug: `발 간격 ${feet.toFixed(2)}배(좋음 ${this.th.goodFeetMin} 이상) · 손목 ${wristY < shoulderY ? "어깨 위" : "어깨 아래"}`,
     };
   }
   reset() {
