@@ -5,7 +5,6 @@ import Link from "next/link";
 import BigButton from "@/components/common/BigButton";
 import GearIcon from "@/components/common/GearIcon";
 import CalorieCard from "./CalorieCard";
-import GachaButton from "@/components/character/ItemGacha";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import PixelCharacter from "@/components/character/PixelCharacter";
 import { useCharacter, useSettings } from "@/hooks/useStored";
@@ -49,8 +48,6 @@ export default function HomeScreen() {
             ))}
           </div>
         </Link>
-
-        <GachaButton />
 
         <div>
           <BigButton href="/workout?mode=routine">기본 루틴 시작 ▶</BigButton>

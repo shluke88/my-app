@@ -140,7 +140,7 @@ export function useWorkoutSession(order: ExerciseId[], mode: "routine" | "single
       if (ticketsAdded > 0) ticketsRef.current += ticketsAdded;
       if (r.reachedLevels.length) {
         setLevelUp({ part: PART_LABEL[part], level: r.next.level, tickets: ticketsAdded, key: nextKey() });
-        say(ticketsAdded > 0 ? `레벨 업! 뽑기권을 받았어요` : `레벨 업!`);
+        say(`${PART_LABEL[part]} 레벨 ${r.next.level}`);
       }
     },
     [say],

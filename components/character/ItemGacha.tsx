@@ -1,13 +1,13 @@
 "use client";
 
-// 아이템 뽑기: 뽑기권이 있으면 버튼이 보이고, 누르면 상자가 흔들리다 열리며 등급 색으로 빛나는 아이템이 나온다.
+// 아이템 뽑기: 뽑기권이 있으면 버튼이 보이고, 누르면 어두운 아이템 16칸 사이로 밝은 칸이 돌다가 멈추고, 등급 색으로 빛나는 아이템이 나온다.
 // 확률(노말 60·레어 28·에픽 10·레전드 2)과 중복 처리는 lib/growth/itemDraw.ts 그대로다.
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import BigButton from "@/components/common/BigButton";
 import { useCharacter } from "@/hooks/useStored";
 import { RARITY_LABEL } from "@/lib/growth/config";
-import { SLOT_LABEL, itemImage } from "@/lib/growth/items";
+import { ITEMS, SLOT_LABEL, itemImage } from "@/lib/growth/items";
 import { openTicket, ticketsOf } from "@/lib/growth/progress";
 import { loadCharacter, saveCharacter } from "@/lib/storage/localStore";
 import type { ItemDef, Rarity } from "@/types";
@@ -19,7 +19,7 @@ const GLOW: Record<Rarity, { ring: string; text: string; bg: string }> = {
   legend: { ring: "rgba(255,157,46,0.95)", text: "text-[#ffc46b]", bg: "from-[#ff9d2e]/55" },
 };
 
-/** 뽑기권이 있을 때만 보이는 버튼 + 뽑기 화면 */
+/** 뽑기권이 있을 때만 보이는 버튼 + 뽑기 화면 (프로필에서만 쓴다) */
 export default function GachaButton({ className = "" }: { className?: string }) {
   const { character, ready } = useCharacter();
   const [open, setOpen] = useState(false);
@@ -33,7 +33,7 @@ export default function GachaButton({ className = "" }: { className?: string }) 
           onClick={() => setOpen(true)}
           className={`animate-pop flex min-h-16 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#ffd75e] to-[#e08a1e] text-xl font-extrabold text-[#3b2300] shadow-[0_0_24px_rgba(255,200,80,0.5)] ${className}`}
         >
-          <span className="animate-shake inline-block">🎁</span> 아이템 뽑기
+          아이템 뽑기
           <span className="rounded-full bg-white/70 px-2.5 py-0.5 text-base">{tickets}장</span>
         </button>
       )}
@@ -42,25 +42,53 @@ export default function GachaButton({ className = "" }: { className?: string }) 
   );
 }
 
-type Phase = "box" | "shaking" | "reveal" | "empty";
+type Phase = "ready" | "spinning" | "reveal" | "empty";
+
+/** 돌아가는 칸 수와 멈추는 속도 (뒤로 갈수록 느려진다) */
+const SPIN_STEPS = 26;
+const spinDelay = (k: number) => 55 + Math.pow(k / SPIN_STEPS, 2.4) * 420;
 
 function GachaModal({ onClose }: { onClose: () => void }) {
   const { character } = useCharacter();
-  const [phase, setPhase] = useState<Phase>("box");
+  const [phase, setPhase] = useState<Phase>("ready");
   const [item, setItem] = useState<ItemDef | null>(null);
   const [placed, setPlaced] = useState(false);
+  /** 지금 밝게 빛나는 칸 (ITEMS 순서) */
+  const [lit, setLit] = useState<number | null>(null);
+  const timers = useRef<number[]>([]);
   const tickets = ticketsOf(character);
 
+  useEffect(() => {
+    const list = timers.current;
+    return () => list.forEach((id) => window.clearTimeout(id));
+  }, []);
+
   const draw = () => {
-    setPhase("shaking");
-    setPlaced(false);
-    // 흔들리는 연출 뒤 결과 공개 (결과는 지금 정해서 바로 저장한다)
+    // 결과는 지금 정해서 바로 저장하고, 화면에서는 밝은 칸이 아이템들을 돌다가 그 아이템에서 멈춘다
     const { character: next, item: got } = openTicket(loadCharacter());
     saveCharacter(next);
-    window.setTimeout(() => {
-      setItem(got);
-      setPhase(got ? "reveal" : "empty");
-    }, 1300);
+    setPlaced(false);
+    if (!got) {
+      setPhase("empty");
+      return;
+    }
+    setItem(got);
+    setPhase("spinning");
+    const target = ITEMS.findIndex((i) => i.id === got.id);
+    let at = 0;
+    let prev = -1;
+    for (let k = 0; k < SPIN_STEPS; k++) {
+      let idx = target;
+      if (k < SPIN_STEPS - 1) {
+        do idx = Math.floor(Math.random() * ITEMS.length);
+        while (idx === prev);
+      }
+      prev = idx;
+      at += spinDelay(k);
+      const show = idx;
+      timers.current.push(window.setTimeout(() => setLit(show), at));
+    }
+    timers.current.push(window.setTimeout(() => setPhase("reveal"), at + 800));
   };
 
   const place = () => {
@@ -76,18 +104,44 @@ function GachaModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-5" role="dialog" aria-label="아이템 뽑기">
       <div className="w-full max-w-sm rounded-3xl border border-line bg-surface p-6 text-center">
-        {phase === "box" || phase === "shaking" ? (
+        {phase === "ready" || phase === "spinning" ? (
           <>
             <p className="text-2xl font-extrabold">아이템 뽑기</p>
             <p className="mt-1 text-sm text-muted">남은 뽑기권 {tickets}장</p>
-            <div className="my-8 flex h-40 items-center justify-center">
-              <span className={`text-[7rem] leading-none ${phase === "shaking" ? "animate-shake" : "animate-float"}`}>🎁</span>
+            {/* 아이템 16개: 평소엔 어둡고, 지금 칸만 밝게 빛난다 */}
+            <div className="my-5 grid grid-cols-4 gap-2">
+              {ITEMS.map((it, i) => {
+                const on = lit === i;
+                const g = GLOW[it.rarity];
+                return (
+                  <div
+                    key={it.id}
+                    className={`flex aspect-square items-center justify-center rounded-2xl border-2 transition-all duration-100 ${
+                      on ? "scale-110 border-white bg-surface-2" : "border-transparent bg-black/30"
+                    }`}
+                    style={on ? { boxShadow: `0 0 18px ${g.ring}`, borderColor: g.ring } : undefined}
+                  >
+                    <Image
+                      src={itemImage(it.id)}
+                      alt=""
+                      width={Math.round((44 * it.w) / it.h)}
+                      height={44}
+                      unoptimized
+                      className={`pixelated h-11 w-auto transition-all duration-100 ${on ? "" : "opacity-35 brightness-50 grayscale"}`}
+                    />
+                  </div>
+                );
+              })}
             </div>
-            <BigButton onClick={draw} disabled={phase === "shaking" || tickets <= 0}>
-              {phase === "shaking" ? "두근두근…" : "열기!"}
+            <BigButton onClick={draw} disabled={phase === "spinning" || tickets <= 0}>
+              {phase === "spinning" ? "뽑는 중…" : "뽑기 시작"}
             </BigButton>
-          </>
-        ) : phase === "reveal" && item && glow ? (
+            {phase === "ready" && (
+              <BigButton variant="ghost" small className="mt-2" onClick={onClose}>
+                닫기
+              </BigButton>
+            )}
+          </>        ) : phase === "reveal" && item && glow ? (
           <>
             <p className={`animate-pop text-3xl font-black ${glow.text}`}>{RARITY_LABEL[item.rarity]}!</p>
             <div className="relative my-5 flex h-48 items-center justify-center">

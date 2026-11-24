@@ -175,22 +175,23 @@ export default function WorkoutScreen() {
           />
         )}
 
-        {/* 레벨 업: 화면 가운데 금빛으로 크게 (잘 보이게), 해금 레벨이면 뽑기권 표시 */}
+        {/* 레벨 업: 오른쪽 구석에 작고 간단하게 (운동을 가리지 않게) */}
         {s.levelUp && (
-          <div key={s.levelUp.key} className="pointer-events-none absolute inset-x-0 top-[22%] z-20 flex justify-center px-6">
-            <div className="animate-levelup relative w-full max-w-xs overflow-hidden rounded-3xl border-2 border-[#ffe08a] bg-gradient-to-b from-[#ffd75e] via-[#f7b733] to-[#e08a1e] px-5 py-4 text-center text-[#3b2300] shadow-[0_0_40px_rgba(255,200,80,0.75)]">
-              <div className="animate-shine pointer-events-none absolute inset-y-0 -left-1/2 w-1/2 -skew-x-12 bg-white/45" />
-              <p className="text-4xl font-black tracking-wide drop-shadow">LEVEL UP!</p>
-              <p className="mt-1 text-2xl font-extrabold">
-                {s.levelUp.part} Lv.{s.levelUp.level}
+          <div
+            key={s.levelUp.key}
+            className={`animate-slide-in pointer-events-none absolute right-3 z-20 flex overflow-hidden rounded-xl bg-[#111827]/85 text-left shadow-lg backdrop-blur ${
+              s.phase === "active" ? "bottom-[10.5rem]" : "bottom-4"
+            }`}
+          >
+            <span className="w-1.5 bg-gradient-to-b from-[#ffd75e] to-[#e08a1e]" />
+            <div className="px-3 py-1.5">
+              <p className="text-sm font-extrabold text-[#ffd75e]">
+                ▲ {s.levelUp.part} Lv.{s.levelUp.level}
               </p>
-              {s.levelUp.tickets > 0 && (
-                <p className="mt-2 rounded-full bg-white/70 px-3 py-1 text-lg font-extrabold">🎁 뽑기권 +{s.levelUp.tickets}</p>
-              )}
+              {s.levelUp.tickets > 0 && <p className="text-xs font-bold text-foreground">뽑기권 +{s.levelUp.tickets}</p>}
             </div>
           </div>
-        )}
-        {/* 3·2·1 */}
+        )}        {/* 3·2·1 */}
         {s.phase === "countdown" && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black/30">
             <p className="animate-pop rounded-full bg-[#3aa66b] px-5 py-2 text-2xl font-extrabold text-white shadow-lg">✓ 인식되었습니다</p>

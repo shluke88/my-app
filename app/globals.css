@@ -144,7 +144,21 @@ body {
 .animate-shine {
   animation: shine 1.4s ease-in-out 0.4s infinite;
 }
-/* 뽑기 상자 흔들림 */
+/* 운동 중 레벨 업 알림: 오른쪽에서 살짝 들어옴 */
+@keyframes slide-in {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.animate-slide-in {
+  animation: slide-in 0.35s ease-out both;
+}
+/* 흔들림 */
 @keyframes shake {
   0%,
   100% {
